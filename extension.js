@@ -12,6 +12,11 @@ const DEFAULT_UPDATE_INTERVAL_MS = 1000;
 const PROC_NET_DEV = '/proc/net/dev';
 const USAGE_DAYS_TO_KEEP = 30;
 const VALID_UPDATE_INTERVALS_MS = [500, 1000, 2000, 3000, 5000];
+const VALID_NETWORK_SOURCES = ['automatic', 'wifi', 'ethernet', 'all'];
+const VALID_SPEED_FORMATS = ['standard', 'compact-slash', 'compact-arrows'];
+const VALID_TEXT_WEIGHTS = ['normal', 'bold'];
+const TOOLTIP_OFFSET = 6;
+const TOOLTIP_ANIMATION_TIME = 150;
 
 function getTodayKey() {
     return GLib.DateTime.new_now_local().format('%F');
@@ -19,6 +24,51 @@ function getTodayKey() {
 
 function getUsageFilePath() {
     return GLib.build_filenamev([GLib.get_user_data_dir(), 'fluxbar', 'usage.json']);
+}
+
+function getInterfaceType(name) {
+    if (name === 'lo')
+        return 'loopback';
+
+    if (
+        name.startsWith('docker') ||
+        name.startsWith('veth') ||
+        name.startsWith('br-') ||
+        name.startsWith('virbr') ||
+        name.startsWith('vmnet') ||
+        name.startsWith('zt') ||
+        name.startsWith('tailscale')
+    )
+        return 'virtual';
+
+    if (name.startsWith('wl') || name.startsWith('wlan') || name.startsWith('wifi'))
+        return 'wifi';
+
+    if (name.startsWith('en') || name.startsWith('eth'))
+        return 'ethernet';
+
+    if (name.startsWith('tun') || name.startsWith('tap') || name.startsWith('wg') || name.startsWith('ppp'))
+        return 'vpn';
+
+    return 'unknown';
+}
+
+function shouldIncludeInterface(name, selectedSource) {
+    const type = getInterfaceType(name);
+
+    if (type === 'loopback' || type === 'virtual')
+        return false;
+
+    if (selectedSource === 'all')
+        return type !== 'unknown';
+
+    if (selectedSource === 'wifi')
+        return type === 'wifi';
+
+    if (selectedSource === 'ethernet')
+        return type === 'ethernet';
+
+    return type === 'wifi' || type === 'ethernet';
 }
 
 const FluxBarIndicator = GObject.registerClass(
@@ -34,13 +84,69 @@ class FluxBarIndicator extends PanelMenu.Button {
 
         this.add_child(this._label);
 
+        this._tooltip = new St.Label({
+            style_class: 'dash-label',
+            text: 'Download: 0 B/s\nUpload: 0 B/s\nTotal: 0 B/s',
+            visible: false,
+        });
+        Main.uiGroup.add_child(this._tooltip);
+
         const settingsItem = new PopupMenu.PopupMenuItem('Settings');
         settingsItem.connect('activate', () => openPreferences());
         this.menu.addMenuItem(settingsItem);
+
+        this.connect('notify::hover', () => this._syncTooltip());
+        this.connect('destroy', () => this._tooltip.destroy());
     }
 
     setSpeedText(text) {
         this._label.text = text;
+    }
+
+    setTooltipText(text) {
+        this._tooltip.text = text;
+
+        if (this.hover)
+            this._syncTooltip();
+    }
+
+    setIndicatorVisible(visible) {
+        this.visible = visible;
+
+        if (!visible)
+            this._syncTooltip();
+    }
+
+    _syncTooltip() {
+        if (this.hover && this.visible) {
+            this._tooltip.set({
+                visible: true,
+                opacity: 0,
+            });
+
+            const [stageX, stageY] = this.get_transformed_position();
+            const [indicatorWidth, indicatorHeight] = this.allocation.get_size();
+            const [tooltipWidth, tooltipHeight] = this._tooltip.get_size();
+            const monitor = Main.layoutManager.findMonitorForActor(this);
+            const x = Math.min(
+                Math.max(stageX + Math.floor((indicatorWidth - tooltipWidth) / 2), monitor.x),
+                monitor.x + monitor.width - tooltipWidth
+            );
+            const y = stageY - monitor.y > indicatorHeight + TOOLTIP_OFFSET
+                ? stageY - tooltipHeight - TOOLTIP_OFFSET
+                : stageY + indicatorHeight + TOOLTIP_OFFSET;
+
+            this._tooltip.set_position(x, y);
+        }
+
+        this._tooltip.ease({
+            opacity: this.hover && this.visible ? 255 : 0,
+            duration: TOOLTIP_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._tooltip.visible = this.hover && this.visible;
+            },
+        });
     }
 });
 
@@ -49,8 +155,16 @@ export default class FluxBarExtension extends Extension {
         this._timeoutId = 0;
         this._settings = this.getSettings();
         this._settingsChangedId = this._settings.connect('changed', (_settings, key) => {
-            if (key === 'update-interval-ms')
+            if (key === 'update-interval-ms') {
                 this._restartTimer();
+            } else if (key === 'network-source') {
+                this._previousStats = this._readNetworkStats();
+                this._indicator?.setSpeedText(this._buildSpeedText(0, 0));
+                this._indicator?.setTooltipText(this._buildTooltipText(0, 0));
+                this._updateVisibility(this._previousStats?.hasSelectedInterface ?? false, 0);
+                this._applyColor();
+                return;
+            }
 
             this._update();
         });
@@ -101,6 +215,33 @@ export default class FluxBarExtension extends Extension {
         return DEFAULT_UPDATE_INTERVAL_MS;
     }
 
+    _getNetworkSource() {
+        const source = this._settings?.get_string('network-source') ?? 'automatic';
+
+        if (VALID_NETWORK_SOURCES.includes(source))
+            return source;
+
+        return 'automatic';
+    }
+
+    _getSpeedFormat() {
+        const format = this._settings?.get_string('speed-format') ?? 'standard';
+
+        if (VALID_SPEED_FORMATS.includes(format))
+            return format;
+
+        return 'standard';
+    }
+
+    _getTextWeight() {
+        const weight = this._settings?.get_string('text-weight') ?? 'normal';
+
+        if (VALID_TEXT_WEIGHTS.includes(weight))
+            return weight;
+
+        return 'normal';
+    }
+
     _update() {
         if (!this._indicator)
             return;
@@ -113,11 +254,17 @@ export default class FluxBarExtension extends Extension {
 
             this._recordUsage(downloadBytes, uploadBytes);
             this._indicator.setSpeedText(this._buildSpeedText(downloadBytes, uploadBytes));
+            this._indicator.setTooltipText(this._buildTooltipText(downloadBytes, uploadBytes));
+            this._updateVisibility(currentStats.hasSelectedInterface, downloadBytes + uploadBytes);
             this._applyColor();
         }
 
-        if (currentStats)
+        if (currentStats) {
+            if (!this._previousStats)
+                this._updateVisibility(currentStats.hasSelectedInterface, 0);
+
             this._previousStats = currentStats;
+        }
     }
 
     _readNetworkStats() {
@@ -128,6 +275,7 @@ export default class FluxBarExtension extends Extension {
 
             let rxBytes = 0;
             let txBytes = 0;
+            let hasSelectedInterface = false;
 
             for (const line of lines) {
                 const [interfaceName, values] = line.trim().split(':');
@@ -137,7 +285,7 @@ export default class FluxBarExtension extends Extension {
 
                 const name = interfaceName.trim();
 
-                if (name === 'lo')
+                if (!shouldIncludeInterface(name, this._getNetworkSource()))
                     continue;
 
                 const fields = values.trim().split(/\s+/);
@@ -145,15 +293,24 @@ export default class FluxBarExtension extends Extension {
                 if (fields.length < 16)
                     continue;
 
+                hasSelectedInterface = true;
                 rxBytes += Number.parseInt(fields[0], 10) || 0;
                 txBytes += Number.parseInt(fields[8], 10) || 0;
             }
 
-            return {rxBytes, txBytes};
+            return {rxBytes, txBytes, hasSelectedInterface};
         } catch (error) {
             console.error('FluxBar: Failed to read /proc/net/dev', error);
             return null;
         }
+    }
+
+    _updateVisibility(hasSelectedInterface, totalBytes) {
+        if (!this._indicator)
+            return;
+
+        const hideWhenIdle = this._settings?.get_boolean('hide-when-idle') ?? true;
+        this._indicator.setIndicatorVisible(!hideWhenIdle || (hasSelectedInterface && totalBytes > 0));
     }
 
     _formatSpeed(bytesPerSecond) {
@@ -187,13 +344,59 @@ export default class FluxBarExtension extends Extension {
         return `${mibPerSecond.toFixed(1)} Mb/s`;
     }
 
+    _formatCompactSpeed(bytesPerSecond) {
+        const useBits = this._settings?.get_string('unit-mode') === 'bits';
+        const value = useBits ? bytesPerSecond * 8 : bytesPerSecond;
+        const base = useBits ? 1000 : 1024;
+        const units = useBits ? ['b', 'Kb', 'Mb', 'Gb'] : ['B', 'K', 'M', 'G'];
+
+        if (value < base)
+            return `${value}${units[0]}`;
+
+        let scaledValue = value;
+        let unitIndex = 0;
+
+        while (scaledValue >= base && unitIndex < units.length - 1) {
+            scaledValue /= base;
+            unitIndex++;
+        }
+
+        const formattedValue = scaledValue < 10 ? scaledValue.toFixed(1) : Math.round(scaledValue).toString();
+        return `${formattedValue}${units[unitIndex]}`;
+    }
+
     _buildSpeedText(downloadBytes, uploadBytes) {
+        const speedFormat = this._getSpeedFormat();
+
+        if (speedFormat !== 'standard') {
+            if (this._settings?.get_string('display-mode') === 'total')
+                return this._formatCompactSpeed(downloadBytes + uploadBytes);
+
+            const downloadSpeed = this._formatCompactSpeed(downloadBytes);
+            const uploadSpeed = this._formatCompactSpeed(uploadBytes);
+
+            if (speedFormat === 'compact-arrows')
+                return `${downloadSpeed}↓ ${uploadSpeed}↑`;
+
+            return `${downloadSpeed} / ${uploadSpeed}`;
+        }
+
         if (this._settings?.get_string('display-mode') === 'total') {
             const totalBytes = downloadBytes + uploadBytes;
             return `↕ ${this._formatSpeed(totalBytes)}`;
         }
 
         return `↓ ${this._formatSpeed(downloadBytes)} ↑ ${this._formatSpeed(uploadBytes)}`;
+    }
+
+    _buildTooltipText(downloadBytes, uploadBytes) {
+        const totalBytes = downloadBytes + uploadBytes;
+
+        return [
+            `Download: ${this._formatSpeed(downloadBytes)}`,
+            `Upload: ${this._formatSpeed(uploadBytes)}`,
+            `Total: ${this._formatSpeed(totalBytes)}`,
+        ].join('\n');
     }
 
     _applyColor() {
@@ -205,6 +408,9 @@ export default class FluxBarExtension extends Extension {
 
         if (/^#[0-9a-fA-F]{6}$/.test(color))
             styleParts.push(`color: ${color};`);
+
+        if (this._getTextWeight() === 'bold')
+            styleParts.push('font-weight: bold;');
 
         this._indicator._label.style = styleParts.join(' ');
     }

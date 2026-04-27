@@ -6,15 +6,35 @@
       <summary>Speed display mode</summary>
       <description>Controls whether FluxBar shows total speed or download and upload speeds separately.</description>
     </key>
+    <key name="speed-format" type="s">
+      <default>'standard'</default>
+      <summary>Speed format</summary>
+      <description>Controls whether FluxBar shows standard or compact speed text.</description>
+    </key>
     <key name="unit-mode" type="s">
       <default>'bytes'</default>
       <summary>Speed unit mode</summary>
       <description>Controls whether FluxBar shows speeds in bytes or bits.</description>
     </key>
+    <key name="network-source" type="s">
+      <default>'automatic'</default>
+      <summary>Network source</summary>
+      <description>Controls which network interfaces FluxBar uses for speed calculations.</description>
+    </key>
+    <key name="hide-when-idle" type="b">
+      <default>true</default>
+      <summary>Hide when idle</summary>
+      <description>Controls whether FluxBar hides the panel label when there is no active network traffic.</description>
+    </key>
     <key name="label-color" type="s">
       <default>''</default>
       <summary>Panel label color</summary>
       <description>Optional hexadecimal color for the FluxBar panel label.</description>
+    </key>
+    <key name="text-weight" type="s">
+      <default>'normal'</default>
+      <summary>Panel label text weight</summary>
+      <description>Controls whether the FluxBar panel label uses normal or bold text.</description>
     </key>
     <key name="update-interval-ms" type="i">
       <default>1000</default>

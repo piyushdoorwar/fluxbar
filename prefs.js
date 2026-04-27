@@ -78,7 +78,11 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
         this._actionGroup = new Gio.SimpleActionGroup();
         this.insert_action_group('fluxbar', this._actionGroup);
         this._actionGroup.add_action(this._settings.create_action('display-mode'));
+        this._actionGroup.add_action(this._settings.create_action('speed-format'));
         this._actionGroup.add_action(this._settings.create_action('unit-mode'));
+        this._actionGroup.add_action(this._settings.create_action('network-source'));
+        this._actionGroup.add_action(this._settings.create_action('hide-when-idle'));
+        this._actionGroup.add_action(this._settings.create_action('text-weight'));
         this._actionGroup.add_action(this._settings.create_action('update-interval-ms'));
 
         this._addDisplayGroup();
@@ -97,10 +101,40 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
             ['total', 'Total Speed'],
         ]);
 
+        this._addSegmentedChoice(group, 'Format', 'speed-format', [
+            ['standard', '↓ 120 KB/s ↑ 35 KB/s'],
+            ['compact-slash', '120K / 35K'],
+            ['compact-arrows', '120↓ 35↑'],
+        ]);
+
         this._addSegmentedChoice(group, 'Units', 'unit-mode', [
             ['bytes', 'Bytes'],
             ['bits', 'Bits'],
         ]);
+
+        this._addSegmentedChoice(group, 'Text Weight', 'text-weight', [
+            ['normal', 'Normal'],
+            ['bold', 'Bold'],
+        ]);
+
+        this._addSegmentedChoice(group, 'Network Source', 'network-source', [
+            ['automatic', 'Automatic'],
+            ['wifi', 'Wi-Fi'],
+            ['ethernet', 'Ethernet'],
+            ['all', 'All interfaces'],
+        ]);
+
+        const hideWhenIdleSwitch = new Gtk.Switch({
+            action_name: 'fluxbar.hide-when-idle',
+            valign: Gtk.Align.CENTER,
+        });
+        const hideWhenIdleRow = new Adw.ActionRow({
+            title: 'Hide When Idle',
+            subtitle: 'Hide the top bar speed when there is no active traffic.',
+            activatable_widget: hideWhenIdleSwitch,
+        });
+        hideWhenIdleRow.add_suffix(hideWhenIdleSwitch);
+        group.add(hideWhenIdleRow);
     }
 
     _addSegmentedChoice(group, title, settingName, options) {
@@ -115,10 +149,12 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
         });
 
         for (const [value, label] of options) {
+            const variantType = typeof value === 'number' ? 'i' : 's';
+
             buttons.append(new Gtk.ToggleButton({
                 label,
                 action_name: `fluxbar.${settingName}`,
-                action_target: new GLib.Variant('s', value),
+                action_target: new GLib.Variant(variantType, value),
             }));
         }
 
@@ -132,26 +168,13 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
         });
         this.add(group);
 
-        const intervals = [
-            [500, '0.5 seconds'],
-            [1000, '1 second'],
-            [2000, '2 seconds'],
-            [3000, '3 seconds'],
-            [5000, '5 seconds'],
-        ];
-
-        for (const [interval, title] of intervals) {
-            const check = new Gtk.CheckButton({
-                action_name: 'fluxbar.update-interval-ms',
-                action_target: new GLib.Variant('i', interval),
-            });
-            const row = new Adw.ActionRow({
-                title,
-                activatable_widget: check,
-            });
-            row.add_prefix(check);
-            group.add(row);
-        }
+        this._addSegmentedChoice(group, 'Refresh', 'update-interval-ms', [
+            [500, '0.5s'],
+            [1000, '1s'],
+            [2000, '2s'],
+            [3000, '3s'],
+            [5000, '5s'],
+        ]);
     }
 
     _addColorGroup() {

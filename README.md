@@ -12,9 +12,14 @@ FluxBar keeps your current upload and download speed visible without opening a s
 
 - See live download and upload speed in the GNOME top bar
 - Switch between total speed and separate download/upload values
+- Choose standard or compact speed text, including `120K / 35K` and `120K↓ 35K↑`
+- Hover the panel label to see download, upload, and total speed details
 - Display speeds in bytes or bits
+- Choose the network source: Automatic, Wi-Fi, Ethernet, or all real interfaces
+- Hide the top bar label when the selected network source is idle
 - Choose an update interval: 0.5, 1, 2, 3, or 5 seconds
 - Apply an optional custom text color
+- Switch the panel label between normal and bold text
 - Review daily network usage for the last 30 days
 - Runs locally with no telemetry, network requests, or external services
 
@@ -30,7 +35,7 @@ Suggested images:
 
 ## How It Works
 
-FluxBar reads network counters from `/proc/net/dev`, ignores the loopback interface, and combines the remaining interfaces into one live speed value. Usage history is stored locally on your machine.
+FluxBar reads network counters from `/proc/net/dev`. By default, Automatic mode shows traffic from real Wi-Fi and Ethernet interfaces while ignoring loopback, Docker, bridge, VM, and other virtual adapters. You can also limit the speed reading to Wi-Fi or Ethernet, or combine all recognized real interfaces. Usage history is stored locally on your machine.
 
 ```text
 ~/.local/share/fluxbar/usage.json
