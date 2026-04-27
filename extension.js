@@ -6,6 +6,7 @@ import St from 'gi://St';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 const DEFAULT_UPDATE_INTERVAL_MS = 1000;
 const PROC_NET_DEV = '/proc/net/dev';
@@ -22,7 +23,7 @@ function getUsageFilePath() {
 
 const FluxBarIndicator = GObject.registerClass(
 class FluxBarIndicator extends PanelMenu.Button {
-    _init() {
+    _init(openPreferences) {
         super._init(0.0, 'FluxBar Indicator');
 
         this._label = new St.Label({
@@ -32,6 +33,10 @@ class FluxBarIndicator extends PanelMenu.Button {
         });
 
         this.add_child(this._label);
+
+        const settingsItem = new PopupMenu.PopupMenuItem('Settings');
+        settingsItem.connect('activate', () => openPreferences());
+        this.menu.addMenuItem(settingsItem);
     }
 
     setSpeedText(text) {
@@ -49,7 +54,7 @@ export default class FluxBarExtension extends Extension {
 
             this._update();
         });
-        this._indicator = new FluxBarIndicator();
+        this._indicator = new FluxBarIndicator(() => this.openPreferences());
         this._previousStats = this._readNetworkStats();
 
         Main.panel.addToStatusArea(this.uuid, this._indicator);
