@@ -1,4 +1,5 @@
 import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
@@ -124,6 +125,10 @@ class FluxBarIndicator extends PanelMenu.Button {
         this._syncTooltip();
     }
 
+    setLabelStyle(style) {
+        this._label.style = style;
+    }
+
     _syncTooltip() {
         const shouldShowTooltip = this._tooltipEnabled && this.hover && this.visible;
 
@@ -160,16 +165,23 @@ class FluxBarIndicator extends PanelMenu.Button {
 });
 
 export default class FluxBarExtension extends Extension {
-    enable() {
+    async enable() {
         this._timeoutId = 0;
+        this._updating = false;
+
+        Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
+        Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
+
+        this._cancellable = new Gio.Cancellable();
         this._settings = this.getSettings();
-        this._settingsChangedId = this._settings.connect('changed', (_settings, key) => {
+        this._settingsChangedId = this._settings.connect('changed', async (_settings, key) => {
             if (key === 'update-interval-ms') {
                 this._restartTimer();
             } else if (key === 'network-source') {
-                this._previousStats = this._readNetworkStats();
-                this._indicator?.setSpeedText(this._buildSpeedText(0, 0));
-                this._indicator?.setTooltipText(this._buildTooltipText(0, 0));
+                this._previousStats = await this._readNetworkStats();
+                if (!this._indicator) return;
+                this._indicator.setSpeedText(this._buildSpeedText(0, 0));
+                this._indicator.setTooltipText(this._buildTooltipText(0, 0));
                 this._updateVisibility(this._previousStats?.hasSelectedInterface ?? false, 0);
                 this._applyColor();
                 return;
@@ -177,18 +189,25 @@ export default class FluxBarExtension extends Extension {
                 this._indicator?.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
             }
 
-            this._update();
+            await this._update();
         });
         this._indicator = new FluxBarIndicator(() => this.openPreferences());
         this._indicator.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
-        this._previousStats = this._readNetworkStats();
 
         Main.panel.addToStatusArea(this.uuid, this._indicator);
-        this._update();
+
+        this._previousStats = await this._readNetworkStats();
+        if (!this._indicator) return;
+        await this._update();
+        if (!this._indicator) return;
         this._restartTimer();
     }
 
     disable() {
+        this._cancellable?.cancel();
+        this._cancellable = null;
+        this._updating = false;
+
         if (this._timeoutId) {
             GLib.Source.remove(this._timeoutId);
             this._timeoutId = 0;
@@ -254,34 +273,44 @@ export default class FluxBarExtension extends Extension {
         return 'normal';
     }
 
-    _update() {
-        if (!this._indicator)
+    async _update() {
+        if (!this._indicator || this._updating)
             return;
 
-        const currentStats = this._readNetworkStats();
+        this._updating = true;
 
-        if (currentStats && this._previousStats) {
-            const downloadBytes = Math.max(0, currentStats.rxBytes - this._previousStats.rxBytes);
-            const uploadBytes = Math.max(0, currentStats.txBytes - this._previousStats.txBytes);
+        try {
+            const currentStats = await this._readNetworkStats();
 
-            this._recordUsage(downloadBytes, uploadBytes);
-            this._indicator.setSpeedText(this._buildSpeedText(downloadBytes, uploadBytes));
-            this._indicator.setTooltipText(this._buildTooltipText(downloadBytes, uploadBytes));
-            this._updateVisibility(currentStats.hasSelectedInterface, downloadBytes + uploadBytes);
-            this._applyColor();
-        }
+            if (!this._indicator) return;
 
-        if (currentStats) {
-            if (!this._previousStats)
-                this._updateVisibility(currentStats.hasSelectedInterface, 0);
+            if (currentStats && this._previousStats) {
+                const downloadBytes = Math.max(0, currentStats.rxBytes - this._previousStats.rxBytes);
+                const uploadBytes = Math.max(0, currentStats.txBytes - this._previousStats.txBytes);
 
-            this._previousStats = currentStats;
+                await this._recordUsage(downloadBytes, uploadBytes);
+                if (!this._indicator) return;
+                this._indicator.setSpeedText(this._buildSpeedText(downloadBytes, uploadBytes));
+                this._indicator.setTooltipText(this._buildTooltipText(downloadBytes, uploadBytes));
+                this._updateVisibility(currentStats.hasSelectedInterface, downloadBytes + uploadBytes);
+                this._applyColor();
+            }
+
+            if (currentStats) {
+                if (!this._previousStats)
+                    this._updateVisibility(currentStats.hasSelectedInterface, 0);
+
+                this._previousStats = currentStats;
+            }
+        } finally {
+            this._updating = false;
         }
     }
 
-    _readNetworkStats() {
+    async _readNetworkStats() {
         try {
-            const [, contents] = GLib.file_get_contents(PROC_NET_DEV);
+            const file = Gio.File.new_for_path(PROC_NET_DEV);
+            const [contents] = await file.load_contents_async(this._cancellable);
             const decoder = new TextDecoder('utf-8');
             const lines = decoder.decode(contents).split('\n');
 
@@ -312,7 +341,8 @@ export default class FluxBarExtension extends Extension {
 
             return {rxBytes, txBytes, hasSelectedInterface};
         } catch (error) {
-            console.error('FluxBar: Failed to read /proc/net/dev', error);
+            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                console.error('FluxBar: Failed to read /proc/net/dev', error);
             return null;
         }
     }
@@ -424,16 +454,16 @@ export default class FluxBarExtension extends Extension {
         if (this._getTextWeight() === 'bold')
             styleParts.push('font-weight: bold;');
 
-        this._indicator._label.style = styleParts.join(' ');
+        this._indicator.setLabelStyle(styleParts.join(' '));
     }
 
-    _recordUsage(downloadBytes, uploadBytes) {
+    async _recordUsage(downloadBytes, uploadBytes) {
         if (downloadBytes === 0 && uploadBytes === 0)
             return;
 
         const filePath = getUsageFilePath();
         const dirPath = GLib.path_get_dirname(filePath);
-        const usage = this._readUsage();
+        const usage = await this._readUsage();
         const today = getTodayKey();
 
         if (!usage[today])
@@ -449,25 +479,34 @@ export default class FluxBarExtension extends Extension {
 
         try {
             GLib.mkdir_with_parents(dirPath, 0o755);
-            GLib.file_set_contents(filePath, JSON.stringify(prunedUsage, null, 2));
+            const file = Gio.File.new_for_path(filePath);
+            const bytes = new GLib.Bytes(new TextEncoder().encode(JSON.stringify(prunedUsage, null, 2)));
+            await file.replace_contents_bytes_async(
+                bytes, null, false,
+                Gio.FileCreateFlags.REPLACE_DESTINATION,
+                this._cancellable
+            );
         } catch (error) {
-            console.error('FluxBar: Failed to write usage data', error);
+            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                console.error('FluxBar: Failed to write usage data', error);
         }
     }
 
-    _readUsage() {
+    async _readUsage() {
         try {
-            const [, contents] = GLib.file_get_contents(getUsageFilePath());
+            const file = Gio.File.new_for_path(getUsageFilePath());
+            const [contents] = await file.load_contents_async(this._cancellable);
             const decoder = new TextDecoder('utf-8');
             const usage = JSON.parse(decoder.decode(contents));
 
             if (usage && typeof usage === 'object')
                 return usage;
         } catch (error) {
-            if (!GLib.file_test(getUsageFilePath(), GLib.FileTest.EXISTS))
+            if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 return {};
 
-            console.error('FluxBar: Failed to read usage data', error);
+            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+                console.error('FluxBar: Failed to read usage data', error);
         }
 
         return {};
