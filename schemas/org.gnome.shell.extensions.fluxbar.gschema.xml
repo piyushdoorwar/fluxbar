@@ -26,6 +26,11 @@
       <summary>Hide when idle</summary>
       <description>Controls whether FluxBar hides the panel label when there is no active network traffic.</description>
     </key>
+    <key name="show-hover-details" type="b">
+      <default>true</default>
+      <summary>Show hover details</summary>
+      <description>Controls whether FluxBar shows detailed speed information when hovering over the panel label.</description>
+    </key>
     <key name="label-color" type="s">
       <default>''</default>
       <summary>Panel label color</summary>

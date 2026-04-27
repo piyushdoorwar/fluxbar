@@ -13,11 +13,11 @@ FluxBar keeps your current upload and download speed visible without opening a s
 - See live download and upload speed in the GNOME top bar
 - Switch between total speed and separate download/upload values
 - Choose standard or compact speed text, including `120K / 35K` and `120K↓ 35K↑`
-- Hover the panel label to see download, upload, and total speed details
+- Optionally hover the panel label to see download, upload, and total speed details
 - Display speeds in bytes or bits
 - Choose the network source: Automatic, Wi-Fi, Ethernet, or all real interfaces
 - Hide the top bar label when the selected network source is idle
-- Choose an update interval: 0.5, 1, 2, 3, or 5 seconds
+- Choose an update interval: 1, 2, 3, or 5 seconds
 - Apply an optional custom text color
 - Switch the panel label between normal and bold text
 - Review daily network usage for the last 30 days
@@ -47,8 +47,8 @@ Clone or copy this project into the GNOME Shell extensions directory:
 
 ```sh
 mkdir -p ~/.local/share/gnome-shell/extensions
-rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@local/
-glib-compile-schemas ~/.local/share/gnome-shell/extensions/fluxbar@local/schemas
+rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/schemas
 ```
 
 Restart GNOME Shell after installing:
@@ -59,7 +59,7 @@ Restart GNOME Shell after installing:
 Enable FluxBar:
 
 ```sh
-gnome-extensions enable fluxbar@local
+gnome-extensions enable fluxbar@piyushdoorwar.github.io
 ```
 
 Open the GNOME Extensions app to enable, disable, or configure FluxBar:
@@ -73,10 +73,10 @@ gnome-extensions-app
 After changing source files, sync the extension and reload it:
 
 ```sh
-rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@local/
-glib-compile-schemas ~/.local/share/gnome-shell/extensions/fluxbar@local/schemas
-gnome-extensions disable fluxbar@local
-gnome-extensions enable fluxbar@local
+rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/schemas
+gnome-extensions disable fluxbar@piyushdoorwar.github.io
+gnome-extensions enable fluxbar@piyushdoorwar.github.io
 ```
 
 View GNOME Shell logs:
@@ -96,7 +96,7 @@ journalctl --user -f
 From inside the extension directory, create a zip:
 
 ```sh
-zip -r fluxbar@local.zip metadata.json extension.js prefs.js schemas/org.gnome.shell.extensions.fluxbar.gschema.xml README.md LICENSE
+zip -r fluxbar@piyushdoorwar.github.io.zip metadata.json extension.js prefs.js schemas/org.gnome.shell.extensions.fluxbar.gschema.xml README.md LICENSE
 ```
 
 The generated zip can be installed manually or prepared for review and distribution.

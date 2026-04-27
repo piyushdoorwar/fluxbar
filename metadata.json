@@ -1,5 +1,5 @@
 {
-  "uuid": "fluxbar@local",
+  "uuid": "fluxbar@piyushdoorwar.github.io",
   "name": "FluxBar",
   "description": "Shows live upload and download speed in the GNOME top bar.",
   "settings-schema": "org.gnome.shell.extensions.fluxbar",

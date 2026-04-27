@@ -11,7 +11,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 const DEFAULT_UPDATE_INTERVAL_MS = 1000;
 const PROC_NET_DEV = '/proc/net/dev';
 const USAGE_DAYS_TO_KEEP = 30;
-const VALID_UPDATE_INTERVALS_MS = [500, 1000, 2000, 3000, 5000];
+const VALID_UPDATE_INTERVALS_MS = [1000, 2000, 3000, 5000];
 const VALID_NETWORK_SOURCES = ['automatic', 'wifi', 'ethernet', 'all'];
 const VALID_SPEED_FORMATS = ['standard', 'compact-slash', 'compact-arrows'];
 const VALID_TEXT_WEIGHTS = ['normal', 'bold'];
@@ -76,6 +76,8 @@ class FluxBarIndicator extends PanelMenu.Button {
     _init(openPreferences) {
         super._init(0.0, 'FluxBar Indicator');
 
+        this._tooltipEnabled = true;
+
         this._label = new St.Label({
             text: '↓ 0 B/s ↑ 0 B/s',
             y_align: Clutter.ActorAlign.CENTER,
@@ -117,8 +119,15 @@ class FluxBarIndicator extends PanelMenu.Button {
             this._syncTooltip();
     }
 
+    setTooltipEnabled(enabled) {
+        this._tooltipEnabled = enabled;
+        this._syncTooltip();
+    }
+
     _syncTooltip() {
-        if (this.hover && this.visible) {
+        const shouldShowTooltip = this._tooltipEnabled && this.hover && this.visible;
+
+        if (shouldShowTooltip) {
             this._tooltip.set({
                 visible: true,
                 opacity: 0,
@@ -140,11 +149,11 @@ class FluxBarIndicator extends PanelMenu.Button {
         }
 
         this._tooltip.ease({
-            opacity: this.hover && this.visible ? 255 : 0,
+            opacity: shouldShowTooltip ? 255 : 0,
             duration: TOOLTIP_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
-                this._tooltip.visible = this.hover && this.visible;
+                this._tooltip.visible = this._tooltipEnabled && this.hover && this.visible;
             },
         });
     }
@@ -164,11 +173,14 @@ export default class FluxBarExtension extends Extension {
                 this._updateVisibility(this._previousStats?.hasSelectedInterface ?? false, 0);
                 this._applyColor();
                 return;
+            } else if (key === 'show-hover-details') {
+                this._indicator?.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
             }
 
             this._update();
         });
         this._indicator = new FluxBarIndicator(() => this.openPreferences());
+        this._indicator.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
         this._previousStats = this._readNetworkStats();
 
         Main.panel.addToStatusArea(this.uuid, this._indicator);

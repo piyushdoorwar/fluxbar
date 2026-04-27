@@ -82,6 +82,7 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
         this._actionGroup.add_action(this._settings.create_action('unit-mode'));
         this._actionGroup.add_action(this._settings.create_action('network-source'));
         this._actionGroup.add_action(this._settings.create_action('hide-when-idle'));
+        this._actionGroup.add_action(this._settings.create_action('show-hover-details'));
         this._actionGroup.add_action(this._settings.create_action('text-weight'));
         this._actionGroup.add_action(this._settings.create_action('update-interval-ms'));
 
@@ -135,6 +136,18 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
         });
         hideWhenIdleRow.add_suffix(hideWhenIdleSwitch);
         group.add(hideWhenIdleRow);
+
+        const showHoverDetailsSwitch = new Gtk.Switch({
+            action_name: 'fluxbar.show-hover-details',
+            valign: Gtk.Align.CENTER,
+        });
+        const showHoverDetailsRow = new Adw.ActionRow({
+            title: 'Show Hover Details',
+            subtitle: 'Show download, upload, and total speed details when hovering over the top bar label.',
+            activatable_widget: showHoverDetailsSwitch,
+        });
+        showHoverDetailsRow.add_suffix(showHoverDetailsSwitch);
+        group.add(showHoverDetailsRow);
     }
 
     _addSegmentedChoice(group, title, settingName, options) {
@@ -169,7 +182,6 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
         this.add(group);
 
         this._addSegmentedChoice(group, 'Refresh', 'update-interval-ms', [
-            [500, '0.5s'],
             [1000, '1s'],
             [2000, '2s'],
             [3000, '3s'],
