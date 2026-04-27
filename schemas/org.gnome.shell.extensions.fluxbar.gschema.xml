@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.fluxbar" path="/org/gnome/shell/extensions/fluxbar/">
+    <key name="display-mode" type="s">
+      <default>'separate'</default>
+      <summary>Speed display mode</summary>
+      <description>Controls whether FluxBar shows total speed or download and upload speeds separately.</description>
+    </key>
+    <key name="unit-mode" type="s">
+      <default>'bytes'</default>
+      <summary>Speed unit mode</summary>
+      <description>Controls whether FluxBar shows speeds in bytes or bits.</description>
+    </key>
+    <key name="label-color" type="s">
+      <default>''</default>
+      <summary>Panel label color</summary>
+      <description>Optional hexadecimal color for the FluxBar panel label.</description>
+    </key>
+    <key name="update-interval-ms" type="i">
+      <default>1000</default>
+      <summary>Update interval</summary>
+      <description>Controls how often FluxBar refreshes network speed, in milliseconds.</description>
+    </key>
+  </schema>
+</schemalist>

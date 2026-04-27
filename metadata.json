@@ -2,6 +2,7 @@
   "uuid": "fluxbar@local",
   "name": "FluxBar",
   "description": "Shows live upload and download speed in the GNOME top bar.",
-  "shell-version": ["45", "46", "47", "48", "50"],
+  "settings-schema": "org.gnome.shell.extensions.fluxbar",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
   "version": 1
 }
