@@ -4,6 +4,10 @@ const tooltip = document.querySelector('#fluxTooltip');
 const tipDown = document.querySelector('#tipDown');
 const tipUp = document.querySelector('#tipUp');
 const tipTotal = document.querySelector('#tipTotal');
+const prefSpeedText = document.querySelector('#prefSpeedText');
+const prefTipDown = document.querySelector('#prefTipDown');
+const prefTipUp = document.querySelector('#prefTipUp');
+const prefTipTotal = document.querySelector('#prefTipTotal');
 const displayMode = document.querySelector('#displayMode');
 const speedFormat = document.querySelector('#speedFormat');
 const unitMode = document.querySelector('#unitMode');
@@ -11,6 +15,8 @@ const labelColor = document.querySelector('#labelColor');
 const labelColorValue = document.querySelector('#labelColorValue');
 const boldText = document.querySelector('#boldText');
 const copyButton = document.querySelector('.copy-button');
+const heroTabs = document.querySelectorAll('[data-hero-tab]');
+const heroPanels = document.querySelectorAll('[data-hero-panel]');
 
 let downloadBytes = 122880;
 let uploadBytes = 35840;
@@ -67,11 +73,17 @@ function render() {
   const total = formatSpeed(downloadBytes + uploadBytes);
 
   speedText.textContent = buildSpeedText();
+  prefSpeedText.textContent = buildSpeedText();
   tipDown.textContent = down;
   tipUp.textContent = up;
   tipTotal.textContent = total;
+  prefTipDown.textContent = down;
+  prefTipUp.textContent = up;
+  prefTipTotal.textContent = total;
   fluxPill.style.color = labelColor.value;
+  prefSpeedText.style.color = labelColor.value;
   fluxPill.style.fontWeight = boldText.checked ? '800' : '700';
+  prefSpeedText.style.fontWeight = boldText.checked ? '800' : '700';
   labelColorValue.textContent = labelColor.value;
 }
 
@@ -157,6 +169,22 @@ document.querySelectorAll('.custom-select').forEach(initCustomSelect);
 
 document.addEventListener('click', (event) => {
   if (!event.target.closest('.custom-select')) closeCustomSelects();
+});
+
+heroTabs.forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const selectedTab = tab.dataset.heroTab;
+
+    heroTabs.forEach((heroTab) => {
+      const isActive = heroTab === tab;
+      heroTab.classList.toggle('is-active', isActive);
+      heroTab.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    heroPanels.forEach((panel) => {
+      panel.classList.toggle('is-active', panel.dataset.heroPanel === selectedTab);
+    });
+  });
 });
 
 fluxPill.addEventListener('click', () => {

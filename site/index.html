@@ -22,10 +22,6 @@
       <a href="#preferences">Preferences</a>
       <a href="#install">Install</a>
     </nav>
-    <a class="header-action github-link" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
-      <img src="assets/github.svg" alt="">
-      <span>GitHub</span>
-    </a>
   </header>
 
   <main id="top">
@@ -33,7 +29,7 @@
       <div class="hero-copy">
         <p class="eyebrow">GNOME Shell Extension</p>
         <h1>FluxBar</h1>
-        <p class="hero-lede">Live upload and download speed, tucked into your GNOME top bar without telemetry, dashboards, or extra noise.</p>
+        <p class="hero-lede">Live network speed in the GNOME top bar, with practical settings for source, format, units, refresh rate, styling, and 30-day usage history.</p>
         <div class="hero-actions">
           <a class="primary-button" href="#install">Install locally</a>
           <a class="secondary-button github-link" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
@@ -45,38 +41,80 @@
 
       <div class="desktop-stage" id="preview" aria-label="Interactive FluxBar preview">
         <div class="desktop-wallpaper">
-          <div class="window window-large">
-            <div class="window-controls" aria-hidden="true">
-              <span></span><span></span><span></span>
+          <div class="prefs-window">
+            <div class="prefs-titlebar">
+              <button class="tab is-active" type="button" data-hero-tab="settings" aria-pressed="true">Settings</button>
+              <button class="tab" type="button" data-hero-tab="history" aria-pressed="false">History</button>
+              <span class="close-dot">×</span>
             </div>
-            <div class="window-content">
-              <div class="usage-graph" aria-hidden="true">
-                <span style="height: 32%"></span>
-                <span style="height: 54%"></span>
-                <span style="height: 46%"></span>
-                <span style="height: 76%"></span>
-                <span style="height: 62%"></span>
-                <span style="height: 88%"></span>
-                <span style="height: 58%"></span>
-                <span style="height: 70%"></span>
-                <span style="height: 42%"></span>
-                <span style="height: 64%"></span>
+            <div class="hero-tab-panel is-active" data-hero-panel="settings">
+              <div class="mock-section">
+                <h3>Display</h3>
+                <div class="mock-list">
+                  <div class="mock-row">
+                    <span>Speed</span>
+                    <div class="segmented two"><b>Download and Upload</b><b>Total Speed</b></div>
+                  </div>
+                  <div class="mock-row">
+                    <span>Format</span>
+                    <div class="segmented three"><b>↓ 120 KB/s ↑ 35 KB/s</b><b>120K / 35K</b><b>120↓ 35↑</b></div>
+                  </div>
+                  <div class="mock-row">
+                    <span>Network Source</span>
+                    <div class="segmented four"><b>Automatic</b><b>Wi-Fi</b><b>Ethernet</b><b>All</b></div>
+                  </div>
+                  <div class="mock-row">
+                    <span>Hover Details</span>
+                    <i class="mock-switch is-on"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="mock-section small">
+                <h3>Update Frequency</h3>
+                <div class="mock-row single">
+                  <span>Refresh</span>
+                  <div class="segmented four compact"><b>1s</b><b>2s</b><b>3s</b><b>5s</b></div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="window window-small">
-            <div class="mini-row"></div>
-            <div class="mini-row"></div>
-            <div class="mini-row short"></div>
+            <div class="hero-tab-panel" data-hero-panel="history">
+              <div class="mock-section">
+                <h3>Data Consumption</h3>
+                <p class="mock-subtitle">Last 30 days of recorded network usage.</p>
+                <div class="mock-history-list">
+                  <div class="mock-history-row is-selected">
+                    <strong>Today</strong>
+                    <span>Download 2.48 GB · Upload 2.44 GB · Total 4.92 GB</span>
+                  </div>
+                  <div class="mock-history-row">
+                    <strong>Yesterday</strong>
+                    <span>Download 14.10 GB · Upload 10.30 GB · Total 24.40 GB</span>
+                  </div>
+                  <div class="mock-history-row">
+                    <strong>May 12</strong>
+                    <span>Download 8.17 GB · Upload 7.16 GB · Total 15.34 GB</span>
+                  </div>
+                  <div class="mock-history-row">
+                    <strong>May 11</strong>
+                    <span>Download 82.2 MB · Upload 1.40 GB · Total 1.48 GB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="gnome-panel">
-          <div class="panel-left">Activities</div>
+          <div class="panel-left" aria-label="Activities">
+            <img src="assets/ic-activities.svg" alt="">
+          </div>
           <button class="flux-pill" id="fluxPill" type="button" aria-describedby="fluxTooltip">
             <span id="speedText">↓ 120 KB/s ↑ 35 KB/s</span>
           </button>
-          <div class="panel-right">Wi-Fi  Battery</div>
+          <div class="panel-right" aria-label="System status">
+            <img src="assets/ic-panel-wifi.svg" alt="">
+            <img src="assets/ic-battery.svg" alt="">
+          </div>
         </div>
         <div class="flux-tooltip" id="fluxTooltip" role="status">
           <span>Download: <strong id="tipDown">120 KB/s</strong></span>
@@ -99,12 +137,16 @@
         <strong>0</strong>
         <span>telemetry calls</span>
       </div>
+      <div>
+        <strong>45-50</strong>
+        <span>GNOME Shell</span>
+      </div>
     </section>
 
     <section class="section" id="features">
       <div class="section-heading">
         <p class="eyebrow">Small Surface, Real Control</p>
-        <h2>Everything useful stays close to the panel.</h2>
+        <h2>The settings window is the feature list.</h2>
       </div>
       <div class="feature-grid">
         <article class="feature-card">
@@ -126,6 +168,41 @@
           <span class="feature-icon"><img src="assets/ic-history.svg" alt=""></span>
           <h3>Usage history</h3>
           <p>Review daily download, upload, and total usage from the last 30 days.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon"><img src="assets/ic-compact.svg" alt=""></span>
+          <h3>Bytes or bits</h3>
+          <p>Switch speed units depending on whether you prefer file-transfer style or network-rate style numbers.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon"><img src="assets/ic-live-speed.svg" alt=""></span>
+          <h3>Idle-aware label</h3>
+          <p>Hide the top bar indicator when the selected network source has no active traffic.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon"><img src="assets/ic-network.svg" alt=""></span>
+          <h3>Hover breakdown</h3>
+          <p>Hover the panel label to see download, upload, and total speed details in one compact tooltip.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon"><img src="assets/fluxbar.svg" alt=""></span>
+          <h3>Panel styling</h3>
+          <p>Use normal or bold text and optionally set a custom top bar label color.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon"><img src="assets/ic-history.svg" alt=""></span>
+          <h3>Refresh choices</h3>
+          <p>Pick a 1, 2, 3, or 5 second update interval to balance freshness with calmness.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon"><img src="assets/ic-network.svg" alt=""></span>
+          <h3>Local counters</h3>
+          <p>Reads Linux interface counters from <code>/proc/net/dev</code> and ignores virtual adapters in automatic mode.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon"><img src="assets/fluxbar.svg" alt=""></span>
+          <h3>No telemetry</h3>
+          <p>No accounts, analytics, network calls, or external services. Usage history stays on your machine.</p>
         </article>
       </div>
     </section>
@@ -175,10 +252,52 @@
             <span>Bold panel text</span>
           </label>
         </div>
-        <div class="privacy-panel">
-          <h3>Local by design</h3>
-          <p>FluxBar reads Linux network counters from <code>/proc/net/dev</code> and stores usage history in your local data directory.</p>
-          <p class="path-chip">~/.local/share/fluxbar/usage.json</p>
+        <div class="preview-panel">
+          <div class="panel-preview-card">
+            <div class="preview-topbar">
+              <span>Activities</span>
+              <strong id="prefSpeedText">↓ 120 KB/s ↑ 35 KB/s</strong>
+              <span>Wi-Fi</span>
+            </div>
+            <div class="preview-tooltip">
+              <span>Download <strong id="prefTipDown">120 KB/s</strong></span>
+              <span>Upload <strong id="prefTipUp">35 KB/s</strong></span>
+              <span>Total <strong id="prefTipTotal">155 KB/s</strong></span>
+            </div>
+          </div>
+
+          <div class="preview-grid">
+            <article>
+              <span>Source</span>
+              <strong>Automatic</strong>
+            </article>
+            <article>
+              <span>Refresh</span>
+              <strong>1s</strong>
+            </article>
+            <article>
+              <span>History</span>
+              <strong>30 days</strong>
+            </article>
+          </div>
+
+          <div class="usage-preview">
+            <div class="usage-preview-heading">
+              <h3>Local by design</h3>
+              <p>FluxBar reads <code>/proc/net/dev</code> and keeps usage history on your machine.</p>
+            </div>
+            <div class="usage-preview-list">
+              <div>
+                <strong>Today</strong>
+                <span>Download 2.48 GB · Upload 2.44 GB</span>
+              </div>
+              <div>
+                <strong>Yesterday</strong>
+                <span>Download 14.10 GB · Upload 10.30 GB</span>
+              </div>
+            </div>
+            <p class="path-chip">~/.local/share/fluxbar/usage.json</p>
+          </div>
         </div>
       </div>
     </section>
