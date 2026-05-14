@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="FluxBar is a small GNOME Shell extension that shows live upload and download speed in your top bar.">
+  <title>FluxBar - Live Network Speed for GNOME</title>
+  <link rel="icon" href="assets/fluxbar.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="FluxBar home">
+      <span class="brand-mark"><img src="assets/fluxbar.svg" alt=""></span>
+      <span>FluxBar</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary navigation">
+      <a href="#features">Features</a>
+      <a href="#preferences">Preferences</a>
+      <a href="#install">Install</a>
+    </nav>
+    <a class="header-action github-link" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
+      <img src="assets/github.svg" alt="">
+      <span>GitHub</span>
+    </a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">GNOME Shell Extension</p>
+        <h1>FluxBar</h1>
+        <p class="hero-lede">Live upload and download speed, tucked into your GNOME top bar without telemetry, dashboards, or extra noise.</p>
+        <div class="hero-actions">
+          <a class="primary-button" href="#install">Install locally</a>
+          <a class="secondary-button github-link" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
+            <img src="assets/github.svg" alt="">
+            <span>View source</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="desktop-stage" id="preview" aria-label="Interactive FluxBar preview">
+        <div class="desktop-wallpaper">
+          <div class="window window-large">
+            <div class="window-controls" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="window-content">
+              <div class="usage-graph" aria-hidden="true">
+                <span style="height: 32%"></span>
+                <span style="height: 54%"></span>
+                <span style="height: 46%"></span>
+                <span style="height: 76%"></span>
+                <span style="height: 62%"></span>
+                <span style="height: 88%"></span>
+                <span style="height: 58%"></span>
+                <span style="height: 70%"></span>
+                <span style="height: 42%"></span>
+                <span style="height: 64%"></span>
+              </div>
+            </div>
+          </div>
+          <div class="window window-small">
+            <div class="mini-row"></div>
+            <div class="mini-row"></div>
+            <div class="mini-row short"></div>
+          </div>
+        </div>
+
+        <div class="gnome-panel">
+          <div class="panel-left">Activities</div>
+          <button class="flux-pill" id="fluxPill" type="button" aria-describedby="fluxTooltip">
+            <span id="speedText">↓ 120 KB/s ↑ 35 KB/s</span>
+          </button>
+          <div class="panel-right">Wi-Fi  Battery</div>
+        </div>
+        <div class="flux-tooltip" id="fluxTooltip" role="status">
+          <span>Download: <strong id="tipDown">120 KB/s</strong></span>
+          <span>Upload: <strong id="tipUp">35 KB/s</strong></span>
+          <span>Total: <strong id="tipTotal">155 KB/s</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="quick-strip" aria-label="FluxBar highlights">
+      <div>
+        <strong>1s</strong>
+        <span>default refresh</span>
+      </div>
+      <div>
+        <strong>30 days</strong>
+        <span>local usage history</span>
+      </div>
+      <div>
+        <strong>0</strong>
+        <span>telemetry calls</span>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="section-heading">
+        <p class="eyebrow">Small Surface, Real Control</p>
+        <h2>Everything useful stays close to the panel.</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-icon">↓↑</span>
+          <h3>Live speed at a glance</h3>
+          <p>Show separate upload and download values, or collapse them into one total speed indicator.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon">K</span>
+          <h3>Compact formats</h3>
+          <p>Choose standard text or compact labels like <code>120K / 35K</code> and <code>120K↓ 35K↑</code>.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon">Wi</span>
+          <h3>Network source choice</h3>
+          <p>Use automatic detection, Wi-Fi, Ethernet, or all recognized real interfaces.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon">30</span>
+          <h3>Usage history</h3>
+          <p>Review daily download, upload, and total usage from the last 30 days.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section preferences-section" id="preferences">
+      <div class="section-heading">
+        <p class="eyebrow">Interactive Preview</p>
+        <h2>Tune the label before you install.</h2>
+      </div>
+      <div class="prefs-layout">
+        <div class="prefs-panel" aria-label="FluxBar preview controls">
+          <label>
+            Display
+            <select id="displayMode">
+              <option value="separate">Download and Upload</option>
+              <option value="total">Total Speed</option>
+            </select>
+          </label>
+          <label>
+            Format
+            <select id="speedFormat">
+              <option value="standard">Standard</option>
+              <option value="compact-slash">Compact Slash</option>
+              <option value="compact-arrows">Compact Arrows</option>
+            </select>
+          </label>
+          <label>
+            Units
+            <select id="unitMode">
+              <option value="bytes">Bytes</option>
+              <option value="bits">Bits</option>
+            </select>
+          </label>
+          <label>
+            Text Color
+            <input id="labelColor" type="color" value="#f6f7fb">
+          </label>
+          <label class="toggle-row">
+            <input id="boldText" type="checkbox">
+            <span>Bold panel text</span>
+          </label>
+        </div>
+        <div class="privacy-panel">
+          <h3>Local by design</h3>
+          <p>FluxBar reads Linux network counters from <code>/proc/net/dev</code> and stores usage history in your local data directory.</p>
+          <p class="path-chip">~/.local/share/fluxbar/usage.json</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="install-section" id="install">
+      <div class="install-copy">
+        <p class="eyebrow">Install Locally</p>
+        <h2>Copy it into your GNOME extensions folder.</h2>
+        <p>FluxBar supports GNOME Shell 45 through 50 and can be installed directly from this repository.</p>
+      </div>
+      <div class="code-panel">
+        <button class="copy-button" type="button" data-copy="installCommands">Copy</button>
+        <pre id="installCommands"><code>mkdir -p ~/.local/share/gnome-shell/extensions
+rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/schemas
+gnome-extensions enable fluxbar@piyushdoorwar.github.io</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>FluxBar</span>
+    <span>Live network speed for GNOME.</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
