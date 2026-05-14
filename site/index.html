@@ -108,22 +108,22 @@
       </div>
       <div class="feature-grid">
         <article class="feature-card">
-          <span class="feature-icon">↓↑</span>
+          <span class="feature-icon"><img src="assets/ic-live-speed.svg" alt=""></span>
           <h3>Live speed at a glance</h3>
           <p>Show separate upload and download values, or collapse them into one total speed indicator.</p>
         </article>
         <article class="feature-card">
-          <span class="feature-icon">K</span>
+          <span class="feature-icon"><img src="assets/ic-compact.svg" alt=""></span>
           <h3>Compact formats</h3>
           <p>Choose standard text or compact labels like <code>120K / 35K</code> and <code>120K↓ 35K↑</code>.</p>
         </article>
         <article class="feature-card">
-          <span class="feature-icon">Wi</span>
+          <span class="feature-icon"><img src="assets/ic-network.svg" alt=""></span>
           <h3>Network source choice</h3>
           <p>Use automatic detection, Wi-Fi, Ethernet, or all recognized real interfaces.</p>
         </article>
         <article class="feature-card">
-          <span class="feature-icon">30</span>
+          <span class="feature-icon"><img src="assets/ic-history.svg" alt=""></span>
           <h3>Usage history</h3>
           <p>Review daily download, upload, and total usage from the last 30 days.</p>
         </article>
@@ -137,34 +137,41 @@
       </div>
       <div class="prefs-layout">
         <div class="prefs-panel" aria-label="FluxBar preview controls">
-          <label>
-            Display
-            <select id="displayMode">
+          <label class="control-field">
+            <span>Display</span>
+            <select id="displayMode" class="native-select" tabindex="-1" aria-hidden="true">
               <option value="separate">Download and Upload</option>
               <option value="total">Total Speed</option>
             </select>
+            <div class="custom-select" data-select="displayMode"></div>
           </label>
-          <label>
-            Format
-            <select id="speedFormat">
+          <label class="control-field">
+            <span>Format</span>
+            <select id="speedFormat" class="native-select" tabindex="-1" aria-hidden="true">
               <option value="standard">Standard</option>
               <option value="compact-slash">Compact Slash</option>
               <option value="compact-arrows">Compact Arrows</option>
             </select>
+            <div class="custom-select" data-select="speedFormat"></div>
           </label>
-          <label>
-            Units
-            <select id="unitMode">
+          <label class="control-field">
+            <span>Units</span>
+            <select id="unitMode" class="native-select" tabindex="-1" aria-hidden="true">
               <option value="bytes">Bytes</option>
               <option value="bits">Bits</option>
             </select>
+            <div class="custom-select" data-select="unitMode"></div>
           </label>
-          <label>
-            Text Color
-            <input id="labelColor" type="color" value="#f6f7fb">
+          <label class="control-field">
+            <span>Text Color</span>
+            <span class="color-control">
+              <input id="labelColor" type="color" value="#f6f7fb">
+              <span id="labelColorValue">#f6f7fb</span>
+            </span>
           </label>
           <label class="toggle-row">
             <input id="boldText" type="checkbox">
+            <span class="toggle-box" aria-hidden="true"></span>
             <span>Bold panel text</span>
           </label>
         </div>

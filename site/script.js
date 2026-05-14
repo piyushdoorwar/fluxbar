@@ -8,6 +8,7 @@ const displayMode = document.querySelector('#displayMode');
 const speedFormat = document.querySelector('#speedFormat');
 const unitMode = document.querySelector('#unitMode');
 const labelColor = document.querySelector('#labelColor');
+const labelColorValue = document.querySelector('#labelColorValue');
 const boldText = document.querySelector('#boldText');
 const copyButton = document.querySelector('.copy-button');
 
@@ -71,6 +72,7 @@ function render() {
   tipTotal.textContent = total;
   fluxPill.style.color = labelColor.value;
   fluxPill.style.fontWeight = boldText.checked ? '800' : '700';
+  labelColorValue.textContent = labelColor.value;
 }
 
 function randomizeSpeeds() {
@@ -81,6 +83,80 @@ function randomizeSpeeds() {
 
 [displayMode, speedFormat, unitMode, labelColor, boldText].forEach((control) => {
   control.addEventListener('input', render);
+});
+
+function closeCustomSelects(exceptSelect) {
+  document.querySelectorAll('.custom-select.is-open').forEach((customSelect) => {
+    if (customSelect === exceptSelect) return;
+
+    customSelect.classList.remove('is-open');
+    customSelect.querySelector('.custom-select-button')?.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function initCustomSelect(customSelect) {
+  const select = document.querySelector(`#${customSelect.dataset.select}`);
+  const button = document.createElement('button');
+  const options = document.createElement('div');
+
+  button.type = 'button';
+  button.className = 'custom-select-button';
+  button.setAttribute('aria-haspopup', 'listbox');
+  button.setAttribute('aria-expanded', 'false');
+  options.className = 'custom-options';
+  options.setAttribute('role', 'listbox');
+
+  function syncLabel() {
+    const selectedOption = select.options[select.selectedIndex];
+    button.textContent = selectedOption.textContent;
+
+    options.querySelectorAll('.custom-option').forEach((optionButton) => {
+      const isSelected = optionButton.dataset.value === select.value;
+      optionButton.classList.toggle('is-selected', isSelected);
+      optionButton.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    });
+  }
+
+  Array.from(select.options).forEach((option) => {
+    const optionButton = document.createElement('button');
+    optionButton.type = 'button';
+    optionButton.className = 'custom-option';
+    optionButton.dataset.value = option.value;
+    optionButton.textContent = option.textContent;
+    optionButton.setAttribute('role', 'option');
+    optionButton.addEventListener('click', () => {
+      select.value = option.value;
+      select.dispatchEvent(new Event('input', {bubbles: true}));
+      syncLabel();
+      customSelect.classList.remove('is-open');
+      button.setAttribute('aria-expanded', 'false');
+      button.focus();
+    });
+    options.append(optionButton);
+  });
+
+  button.addEventListener('click', () => {
+    const shouldOpen = !customSelect.classList.contains('is-open');
+    closeCustomSelects(customSelect);
+    customSelect.classList.toggle('is-open', shouldOpen);
+    button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  });
+
+  button.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      customSelect.classList.remove('is-open');
+      button.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  customSelect.append(button, options);
+  syncLabel();
+}
+
+document.querySelectorAll('.custom-select').forEach(initCustomSelect);
+
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.custom-select')) closeCustomSelects();
 });
 
 fluxPill.addEventListener('click', () => {
