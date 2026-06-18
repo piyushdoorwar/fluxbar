@@ -54,4 +54,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" "fluxbar@piyushdoorwar.github.io.zip" --generate-notes
+        run: |
+          ZIP=fluxbar@piyushdoorwar.github.io.zip
+          # Idempotent: update the asset if the release already exists (re-runs, retags).
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ZIP" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$ZIP" --generate-notes
+          fi
