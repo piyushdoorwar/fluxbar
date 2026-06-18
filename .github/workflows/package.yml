@@ -2,7 +2,6 @@ name: Package extension
 
 on:
   push:
-    branches: ["main"]
     tags: ["v*"]
   workflow_dispatch:
 
@@ -15,6 +14,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          # Tag must be v<integer> (e.g. v2); EGO requires an integer version.
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ! echo "$VERSION" | grep -qE '^[0-9]+$'; then
+            echo "::error::Tag must be v<integer> (e.g. v2); got '$GITHUB_REF_NAME'"
+            exit 1
+          fi
+          jq --argjson v "$VERSION" '.version = $v' metadata.json > metadata.tmp
+          mv metadata.tmp metadata.json
+          echo "metadata.json version set to $VERSION"
+          cat metadata.json
 
       - name: Build zip
         run: make pack
