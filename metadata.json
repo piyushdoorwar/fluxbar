@@ -4,5 +4,9 @@
   "description": "Shows live upload and download speed in the GNOME top bar.",
   "url": "https://github.com/piyushdoorwar/fluxbar",
   "settings-schema": "org.gnome.shell.extensions.fluxbar",
-  "shell-version": ["45", "46", "47", "48", "49", "50"]
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "version": 2,
+  "donations": {
+    "buymeacoffee": "piyushdoorwar"
+  }
 }

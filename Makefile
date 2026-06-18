@@ -35,7 +35,7 @@ logs:
 ## pack: build the distributable zip
 pack:
 	rm -f $(UUID).zip
-	zip -r $(UUID).zip $(PACK)
+	zip -r $(UUID).zip $(PACK) -x '*gschemas.compiled'
 
 ## lint: run ESLint (requires 'npm install' first)
 lint:
