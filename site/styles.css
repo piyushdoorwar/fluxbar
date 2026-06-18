@@ -1154,10 +1154,9 @@ pre {
 }
 
 .install-copy h2 code {
-  padding: 0.05em 0.35em;
-  border-radius: 6px;
-  background: var(--accent-dim);
-  font-size: 0.85em;
+  color: var(--accent);
+  font-size: 0.82em;
+  letter-spacing: -0.02em;
 }
 
 kbd {
