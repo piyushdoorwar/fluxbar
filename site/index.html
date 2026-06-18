@@ -305,15 +305,16 @@
     <section class="install-section" id="install">
       <div class="install-copy">
         <p class="eyebrow">Install Locally</p>
-        <h2>Copy it into your GNOME extensions folder.</h2>
-        <p>FluxBar supports GNOME Shell 45 through 50 and can be installed directly from this repository.</p>
+        <h2>Clone it, then <code>make install</code>.</h2>
+        <p>FluxBar supports GNOME Shell 45 through 50. Clone the repository and let the included Makefile copy the files and compile the schema for you.</p>
       </div>
       <div class="code-panel">
         <button class="copy-button" type="button" data-copy="installCommands">Copy</button>
-        <pre id="installCommands"><code>mkdir -p ~/.local/share/gnome-shell/extensions
-rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/
-glib-compile-schemas ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/schemas
+        <pre id="installCommands"><code>git clone https://github.com/piyushdoorwar/fluxbar.git
+cd fluxbar
+make install
 gnome-extensions enable fluxbar@piyushdoorwar.github.io</code></pre>
+        <p class="code-note">Then restart GNOME Shell — press <kbd>Alt</kbd>+<kbd>F2</kbd>, type <kbd>r</kbd>, Enter on X11, or log out and back in on Wayland.</p>
       </div>
     </section>
   </main>

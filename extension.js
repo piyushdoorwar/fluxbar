@@ -12,6 +12,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 const DEFAULT_UPDATE_INTERVAL_MS = 1000;
 const PROC_NET_DEV = '/proc/net/dev';
 const USAGE_DAYS_TO_KEEP = 30;
+const USAGE_FLUSH_INTERVAL_MS = 30000;
 const VALID_UPDATE_INTERVALS_MS = [1000, 2000, 3000, 5000];
 const VALID_NETWORK_SOURCES = ['automatic', 'wifi', 'ethernet', 'all'];
 const VALID_SPEED_FORMATS = ['standard', 'compact-slash', 'compact-arrows'];
@@ -25,6 +26,16 @@ function getTodayKey() {
 
 function getUsageFilePath() {
     return GLib.build_filenamev([GLib.get_user_data_dir(), 'fluxbar', 'usage.json']);
+}
+
+function pruneUsage(usage) {
+    const keepDates = Object.keys(usage).sort().slice(-USAGE_DAYS_TO_KEEP);
+    const prunedUsage = {};
+
+    for (const date of keepDates)
+        prunedUsage[date] = usage[date];
+
+    return prunedUsage;
 }
 
 function getInterfaceType(name) {
@@ -167,7 +178,10 @@ class FluxBarIndicator extends PanelMenu.Button {
 export default class FluxBarExtension extends Extension {
     async enable() {
         this._timeoutId = 0;
+        this._usageFlushTimeoutId = 0;
         this._updating = false;
+        this._usage = {};
+        this._usageDirty = false;
 
         Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
         Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
@@ -196,22 +210,34 @@ export default class FluxBarExtension extends Extension {
 
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
+        this._usage = await this._readUsage();
+        if (!this._indicator) return;
         this._previousStats = await this._readNetworkStats();
         if (!this._indicator) return;
         await this._update();
         if (!this._indicator) return;
         this._restartTimer();
+        this._startUsageFlushTimer();
     }
 
     disable() {
-        this._cancellable?.cancel();
-        this._cancellable = null;
-        this._updating = false;
-
         if (this._timeoutId) {
             GLib.Source.remove(this._timeoutId);
             this._timeoutId = 0;
         }
+
+        if (this._usageFlushTimeoutId) {
+            GLib.Source.remove(this._usageFlushTimeoutId);
+            this._usageFlushTimeoutId = 0;
+        }
+
+        this._flushUsageSync();
+
+        this._cancellable?.cancel();
+        this._cancellable = null;
+        this._updating = false;
+        this._usage = null;
+        this._usageDirty = false;
 
         this._indicator?.destroy();
         this._indicator = null;
@@ -232,6 +258,20 @@ export default class FluxBarExtension extends Extension {
             this._getUpdateIntervalMs(),
             () => {
                 this._update();
+                return GLib.SOURCE_CONTINUE;
+            }
+        );
+    }
+
+    _startUsageFlushTimer() {
+        if (this._usageFlushTimeoutId)
+            GLib.Source.remove(this._usageFlushTimeoutId);
+
+        this._usageFlushTimeoutId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            USAGE_FLUSH_INTERVAL_MS,
+            () => {
+                this._flushUsage();
                 return GLib.SOURCE_CONTINUE;
             }
         );
@@ -285,11 +325,23 @@ export default class FluxBarExtension extends Extension {
             if (!this._indicator) return;
 
             if (currentStats && this._previousStats) {
-                const downloadBytes = Math.max(0, currentStats.rxBytes - this._previousStats.rxBytes);
-                const uploadBytes = Math.max(0, currentStats.txBytes - this._previousStats.txBytes);
+                let downloadBytes = 0;
+                let uploadBytes = 0;
 
-                await this._recordUsage(downloadBytes, uploadBytes);
-                if (!this._indicator) return;
+                for (const name in currentStats.interfaces) {
+                    const previous = this._previousStats.interfaces[name];
+
+                    // Skip interfaces that appeared this tick: diffing their full
+                    // cumulative counter against nothing would record a phantom spike.
+                    if (!previous)
+                        continue;
+
+                    const current = currentStats.interfaces[name];
+                    downloadBytes += Math.max(0, current.rxBytes - previous.rxBytes);
+                    uploadBytes += Math.max(0, current.txBytes - previous.txBytes);
+                }
+
+                this._recordUsage(downloadBytes, uploadBytes);
                 this._indicator.setSpeedText(this._buildSpeedText(downloadBytes, uploadBytes));
                 this._indicator.setTooltipText(this._buildTooltipText(downloadBytes, uploadBytes));
                 this._updateVisibility(currentStats.hasSelectedInterface, downloadBytes + uploadBytes);
@@ -314,8 +366,7 @@ export default class FluxBarExtension extends Extension {
             const decoder = new TextDecoder('utf-8');
             const lines = decoder.decode(contents).split('\n');
 
-            let rxBytes = 0;
-            let txBytes = 0;
+            const interfaces = {};
             let hasSelectedInterface = false;
 
             for (const line of lines) {
@@ -335,11 +386,13 @@ export default class FluxBarExtension extends Extension {
                     continue;
 
                 hasSelectedInterface = true;
-                rxBytes += Number.parseInt(fields[0], 10) || 0;
-                txBytes += Number.parseInt(fields[8], 10) || 0;
+                interfaces[name] = {
+                    rxBytes: Number.parseInt(fields[0], 10) || 0,
+                    txBytes: Number.parseInt(fields[8], 10) || 0,
+                };
             }
 
-            return {rxBytes, txBytes, hasSelectedInterface};
+            return {interfaces, hasSelectedInterface};
         } catch (error) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 console.error('FluxBar: Failed to read /proc/net/dev', error);
@@ -457,38 +510,58 @@ export default class FluxBarExtension extends Extension {
         this._indicator.setLabelStyle(styleParts.join(' '));
     }
 
-    async _recordUsage(downloadBytes, uploadBytes) {
+    _recordUsage(downloadBytes, uploadBytes) {
         if (downloadBytes === 0 && uploadBytes === 0)
             return;
 
-        const filePath = getUsageFilePath();
-        const dirPath = GLib.path_get_dirname(filePath);
-        const usage = await this._readUsage();
+        if (!this._usage)
+            return;
+
         const today = getTodayKey();
 
-        if (!usage[today])
-            usage[today] = {rxBytes: 0, txBytes: 0};
-        usage[today].rxBytes += downloadBytes;
-        usage[today].txBytes += uploadBytes;
+        if (!this._usage[today])
+            this._usage[today] = {rxBytes: 0, txBytes: 0};
+        this._usage[today].rxBytes += downloadBytes;
+        this._usage[today].txBytes += uploadBytes;
+        this._usageDirty = true;
+    }
 
-        const keepDates = Object.keys(usage).sort().slice(-USAGE_DAYS_TO_KEEP);
-        const prunedUsage = {};
+    async _flushUsage() {
+        if (!this._usageDirty || !this._usage)
+            return;
 
-        for (const date of keepDates)
-            prunedUsage[date] = usage[date];
+        this._usage = pruneUsage(this._usage);
+        const payload = JSON.stringify(this._usage, null, 2);
+        const filePath = getUsageFilePath();
 
         try {
-            GLib.mkdir_with_parents(dirPath, 0o755);
+            GLib.mkdir_with_parents(GLib.path_get_dirname(filePath), 0o755);
             const file = Gio.File.new_for_path(filePath);
-            const bytes = new GLib.Bytes(new TextEncoder().encode(JSON.stringify(prunedUsage, null, 2)));
+            const bytes = new GLib.Bytes(new TextEncoder().encode(payload));
             await file.replace_contents_bytes_async(
                 bytes, null, false,
                 Gio.FileCreateFlags.REPLACE_DESTINATION,
                 this._cancellable
             );
+            this._usageDirty = false;
         } catch (error) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 console.error('FluxBar: Failed to write usage data', error);
+        }
+    }
+
+    _flushUsageSync() {
+        if (!this._usage)
+            return;
+
+        const filePath = getUsageFilePath();
+
+        try {
+            GLib.mkdir_with_parents(GLib.path_get_dirname(filePath), 0o755);
+            GLib.file_set_contents(filePath, JSON.stringify(pruneUsage(this._usage), null, 2));
+            this._usageDirty = false;
+        } catch (error) {
+            console.error('FluxBar: Failed to write usage data', error);
         }
     }
 

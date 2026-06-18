@@ -43,7 +43,15 @@ FluxBar reads network counters from `/proc/net/dev`. By default, Automatic mode 
 
 ## Install Locally
 
-Clone or copy this project into the GNOME Shell extensions directory:
+Clone the repository and run `make install`, which copies the files into the GNOME Shell extensions directory and compiles the schema:
+
+```sh
+git clone https://github.com/piyushdoorwar/fluxbar.git
+cd fluxbar
+make install
+```
+
+If you prefer not to use `make`, the equivalent commands are:
 
 ```sh
 mkdir -p ~/.local/share/gnome-shell/extensions
@@ -70,7 +78,15 @@ gnome-extensions-app
 
 ## Development
 
-After changing source files, sync the extension and reload it:
+After changing source files, reinstall and reload the extension. A `Makefile` wraps the common tasks:
+
+```sh
+make reload   # sync sources, compile schemas, disable + enable
+make logs     # follow GNOME Shell logs
+make lint     # run ESLint (run `npm install` once first)
+```
+
+`make install` does the sync + schema compile without toggling the extension. The equivalent raw commands are:
 
 ```sh
 rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/
@@ -79,21 +95,17 @@ gnome-extensions disable fluxbar@piyushdoorwar.github.io
 gnome-extensions enable fluxbar@piyushdoorwar.github.io
 ```
 
-View GNOME Shell logs:
-
-```sh
-journalctl /usr/bin/gnome-shell -f
-```
-
-On some Ubuntu sessions, this command may be more useful:
-
-```sh
-journalctl --user -f
-```
+On some Ubuntu sessions, `journalctl --user -f` shows more than `make logs`.
 
 ## Package
 
-From inside the extension directory, create a zip:
+Create the distributable zip:
+
+```sh
+make pack
+```
+
+This is equivalent to:
 
 ```sh
 zip -r fluxbar@piyushdoorwar.github.io.zip metadata.json extension.js prefs.js schemas/org.gnome.shell.extensions.fluxbar.gschema.xml README.md LICENSE
