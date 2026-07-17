@@ -653,7 +653,7 @@ h3 {
 
 .quick-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1px;
   margin: 0 5vw;
   overflow: hidden;

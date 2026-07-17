@@ -17,9 +17,30 @@ const boldText = document.querySelector('#boldText');
 const copyButton = document.querySelector('.copy-button');
 const heroTabs = document.querySelectorAll('[data-hero-tab]');
 const heroPanels = document.querySelectorAll('[data-hero-panel]');
+const extensionDownloads = document.querySelector('#extensionDownloads');
 
 let downloadBytes = 122880;
 let uploadBytes = 35840;
+
+async function loadExtensionDownloads() {
+  try {
+    const response = await fetch('data/extension-stats.json', {cache: 'no-cache'});
+    if (!response.ok) return;
+
+    const stats = await response.json();
+    if (!Number.isInteger(stats.downloads) || stats.downloads < 0) return;
+
+    extensionDownloads.textContent = new Intl.NumberFormat().format(stats.downloads);
+    if (stats.generatedAt) {
+      const updated = new Date(stats.generatedAt);
+      if (!Number.isNaN(updated.getTime())) {
+        extensionDownloads.title = `Updated ${updated.toLocaleDateString()}`;
+      }
+    }
+  } catch {
+    // Keep the generated HTML fallback when the local data file cannot be loaded.
+  }
+}
 
 function formatSpeed(bytesPerSecond) {
   if (unitMode.value === 'bits') {
@@ -208,4 +229,5 @@ copyButton.addEventListener('click', async () => {
 });
 
 render();
+loadExtensionDownloads();
 window.setInterval(randomizeSpeeds, 1800);

@@ -26,4 +26,14 @@ export default [
             'no-unused-vars': ['error', {argsIgnorePattern: '^_', varsIgnorePattern: '^_'}],
         },
     },
+    {
+        files: ['scripts/**/*.mjs'],
+        languageOptions: {
+            globals: {
+                console: 'readonly',
+                fetch: 'readonly',
+                process: 'readonly',
+            },
+        },
+    },
 ];

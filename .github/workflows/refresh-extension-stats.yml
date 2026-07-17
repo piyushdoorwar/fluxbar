@@ -1,0 +1,58 @@
+name: Refresh extension download count
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 10:23 UTC, offset from the busiest top-of-hour window.
+    - cron: '23 10 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extension-stats-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.persist.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch GNOME Extensions download count
+        run: node scripts/fetch-extension-stats.mjs
+
+      - name: Persist changed download count
+        id: persist
+        run: |
+          if git diff --quiet -- site/data/extension-stats.json; then
+            echo "GNOME download count is already up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/data/extension-stats.json
+          git commit -m "chore(site): refresh GNOME download count"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/static.yml
