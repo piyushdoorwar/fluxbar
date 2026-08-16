@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0" stop-color="#df1463" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#111010" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#252123"/>
+      <stop offset="1" stop-color="#181616"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#111010"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <circle cx="1100" cy="45" r="180" fill="#df1463" opacity="0.08"/>
+  <circle cx="80" cy="600" r="220" fill="#df1463" opacity="0.06"/>
+
+  <g transform="translate(94 112)">
+    <rect width="112" height="112" rx="24" fill="#fbf8fa"/>
+    <g transform="translate(16 16) scale(3.333333)">
+      <path d="M3.814 11.125v9.067c0 .529.428.958.957.958h4.788V11.125a.957.957 0 0 0-.958-.957h-3.83a.957.957 0 0 0-.957.957Z" fill="#1c1c1c" fill-opacity=".04" stroke="#1c1c1c" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M20.091 12.832h-3.83a.957.957 0 0 0-.958.958v7.363h4.788a.957.957 0 0 0 .957-.958V13.79a.957.957 0 0 0-.957-.958Z" fill="#1c1c1c" fill-opacity=".04" stroke="#1c1c1c" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M9.559 3.805V21.15h5.744V3.805a.957.957 0 0 0-.957-.958h-3.83a.957.957 0 0 0-.957.958Z" fill="#df1463" fill-opacity=".08" stroke="#df1463" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M5.4 16.7h1.85l1.1-2 3 3.45 1.8-5 2.1 2.9h3.35" stroke="#df1463" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="18.6" cy="16.05" r=".85" fill="#df1463"/>
+    </g>
+  </g>
+
+  <text x="94" y="318" fill="#fbf8fa" font-family="Inter, Arial, sans-serif" font-size="84" font-weight="800">FluxBar</text>
+  <text x="98" y="378" fill="#e4dde0" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="500">Live network speed for GNOME</text>
+  <text x="98" y="426" fill="#aaa2a6" font-family="Inter, Arial, sans-serif" font-size="23">Private by design · Flexible display · 30-day history</text>
+
+  <g transform="translate(700 170)">
+    <rect width="410" height="290" rx="22" fill="url(#panel)" stroke="#3b3437" stroke-width="2"/>
+    <rect width="410" height="58" rx="22" fill="#30282c"/>
+    <path d="M0 36h410v22H0z" fill="#30282c"/>
+    <circle cx="31" cy="29" r="8" fill="#df1463"/>
+    <text x="55" y="38" fill="#fbf8fa" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">GNOME</text>
+    <rect x="154" y="14" width="224" height="31" rx="15.5" fill="#442a35" stroke="#704052"/>
+    <text x="177" y="36" fill="#fbf8fa" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">↓ 120 KB/s  ↑ 35 KB/s</text>
+    <text x="32" y="112" fill="#aaa2a6" font-family="Inter, Arial, sans-serif" font-size="17">Download</text>
+    <text x="260" y="112" fill="#fbf8fa" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="700">120 KB/s</text>
+    <line x1="32" y1="135" x2="378" y2="135" stroke="#3b3437"/>
+    <text x="32" y="181" fill="#aaa2a6" font-family="Inter, Arial, sans-serif" font-size="17">Upload</text>
+    <text x="270" y="181" fill="#fbf8fa" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="700">35 KB/s</text>
+    <line x1="32" y1="204" x2="378" y2="204" stroke="#3b3437"/>
+    <text x="32" y="250" fill="#aaa2a6" font-family="Inter, Arial, sans-serif" font-size="17">Total</text>
+    <text x="266" y="250" fill="#ff4f91" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="700">155 KB/s</text>
+  </g>
+</svg>
