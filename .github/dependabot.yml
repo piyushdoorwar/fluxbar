@@ -1,0 +1,18 @@
+# Dependabot version updates.
+# The extension has no runtime npm dependencies (package.json carries only
+# scripts), so the only thing to keep current is the GitHub Actions in
+# .github/workflows.
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(deps)"
