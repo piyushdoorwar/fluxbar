@@ -77,4 +77,4 @@ zip -r fluxbar@piyushdoorwar.github.io.zip metadata.json extension.js prefs.js s
 
 ## The `site/` directory
 
-Static marketing site (`index.html` + `styles.css` + `script.js` + `assets/`), unrelated to the extension code. `.github/workflows/static.yml` deploys `./site` to GitHub Pages on every push to `main`.
+Static marketing site (`index.html` + `404.html` + `styles.css` + `app.js` + `assets/icons.svg` sprite + `data/extension-stats.json`), unrelated to the extension code. It follows the house product-site design (DM Sans, light by default with OS-driven dark tokens, pink accent tokens in `styles.css`). `.github/workflows/static.yml` deploys `./site` to GitHub Pages on every push to `main`; `refresh-extension-stats.yml` rewrites `site/data/extension-stats.json`, which `app.js` reads for the download count.

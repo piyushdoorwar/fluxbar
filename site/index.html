@@ -1,372 +1,475 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FluxBar - Live Network Speed for GNOME</title>
-  <meta name="description" content="FluxBar is a privacy-friendly GNOME Shell extension that shows live upload and download speed, usage history, and network details in your top bar.">
-  <meta name="robots" content="index, follow, max-image-preview:large">
-  <meta name="theme-color" content="#111010">
-  <link rel="canonical" href="https://piyushdoorwar.github.io/fluxbar/">
-  <link rel="sitemap" type="application/xml" title="Sitemap" href="https://piyushdoorwar.github.io/fluxbar/sitemap.xml">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="FluxBar is a privacy-friendly GNOME Shell extension that shows live upload and download speed, usage history, and network details in your top bar."
+    />
+    <meta name="author" content="Piyush Doorwar" />
+    <meta name="application-name" content="FluxBar" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#FCFCFC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#161719" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href="https://piyushdoorwar.github.io/fluxbar/" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://piyushdoorwar.github.io/fluxbar/sitemap.xml" />
 
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:site_name" content="FluxBar">
-  <meta property="og:title" content="FluxBar - Live Network Speed for GNOME">
-  <meta property="og:description" content="Monitor live upload and download speed from your GNOME top bar, with flexible formats, local usage history, and no telemetry.">
-  <meta property="og:url" content="https://piyushdoorwar.github.io/fluxbar/">
-  <meta property="og:image" content="https://piyushdoorwar.github.io/fluxbar/assets/og-image.png">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="FluxBar live network speed extension for the GNOME top bar">
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="FluxBar" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="FluxBar - Live Network Speed for GNOME" />
+    <meta
+      property="og:description"
+      content="Monitor live upload and download speed from your GNOME top bar, with flexible formats, local usage history, and no telemetry."
+    />
+    <meta property="og:url" content="https://piyushdoorwar.github.io/fluxbar/" />
+    <meta property="og:image" content="https://piyushdoorwar.github.io/fluxbar/assets/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="FluxBar live network speed extension for the GNOME top bar" />
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="FluxBar - Live Network Speed for GNOME">
-  <meta name="twitter:description" content="Monitor live upload and download speed from your GNOME top bar, with flexible formats, local usage history, and no telemetry.">
-  <meta name="twitter:image" content="https://piyushdoorwar.github.io/fluxbar/assets/og-image.png">
-  <meta name="twitter:image:alt" content="FluxBar live network speed extension for the GNOME top bar">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FluxBar - Live Network Speed for GNOME" />
+    <meta
+      name="twitter:description"
+      content="Monitor live upload and download speed from your GNOME top bar, with flexible formats, local usage history, and no telemetry."
+    />
+    <meta name="twitter:image" content="https://piyushdoorwar.github.io/fluxbar/assets/og-image.png" />
+    <meta name="twitter:image:alt" content="FluxBar live network speed extension for the GNOME top bar" />
 
-  <link rel="icon" href="assets/fluxbar.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+    <title>FluxBar - Live Network Speed for GNOME</title>
+    <link rel="icon" href="assets/fluxbar.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script>document.documentElement.classList.add("js");</script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "FluxBar",
+        "description": "A privacy-friendly GNOME Shell extension that shows live upload and download speed, usage history, and network details in the top bar.",
+        "url": "https://piyushdoorwar.github.io/fluxbar/",
+        "image": "https://piyushdoorwar.github.io/fluxbar/assets/og-image.png",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Linux with GNOME Shell 45-50",
+        "isAccessibleForFree": true,
+        "installUrl": "https://piyushdoorwar.github.io/fluxbar/#install",
+        "author": { "@type": "Person", "name": "Piyush Doorwar" },
+        "license": "https://github.com/piyushdoorwar/fluxbar/blob/main/LICENSE",
+        "codeRepository": "https://github.com/piyushdoorwar/fluxbar"
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
 
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "FluxBar",
-      "description": "A privacy-friendly GNOME Shell extension that shows live upload and download speed, usage history, and network details in the top bar.",
-      "url": "https://piyushdoorwar.github.io/fluxbar/",
-      "image": "https://piyushdoorwar.github.io/fluxbar/assets/og-image.png",
-      "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Linux with GNOME Shell 45-50",
-      "isAccessibleForFree": true,
-      "license": "https://github.com/piyushdoorwar/fluxbar/blob/main/LICENSE",
-      "codeRepository": "https://github.com/piyushdoorwar/fluxbar"
-    }
-  </script>
-</head>
-<body>
-  <header class="site-header">
-    <a class="brand" href="#top" aria-label="FluxBar home">
-      <span class="brand-mark"><img src="assets/fluxbar.svg" alt=""></span>
-      <span>FluxBar</span>
-    </a>
-    <nav class="nav-links" aria-label="Primary navigation">
-      <a href="#features">Features</a>
-      <a href="#preferences">Preferences</a>
-      <a href="#install">Install</a>
-    </nav>
-  </header>
-
-  <main id="top">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">GNOME Shell Extension</p>
-        <h1>FluxBar</h1>
-        <p class="hero-lede">Live network speed in the GNOME top bar, with practical settings for source, format, units, refresh rate, styling, and 30-day usage history.</p>
-        <div class="hero-actions">
-          <a class="primary-button" href="#install">Install locally</a>
-          <a class="secondary-button github-link" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
-            <img src="assets/github.svg" alt="">
-            <span>View source</span>
+    <header class="topbar">
+      <div class="wrap">
+        <a class="brand" href="./" aria-label="FluxBar home">
+          <img src="assets/fluxbar.svg" alt="" width="30" height="30" />
+          <span>FluxBar</span>
+        </a>
+        <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+          <svg class="ic i-menu" aria-hidden="true"><use href="assets/icons.svg#i-menu" /></svg>
+          <svg class="ic i-close" aria-hidden="true"><use href="assets/icons.svg#i-close" /></svg>
+        </button>
+        <nav class="nav" id="site-nav" aria-label="Primary">
+          <a href="#features">Features</a>
+          <a href="#preferences">Preferences</a>
+          <a href="#install">Install</a>
+          <a class="nav-gh" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
+            <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-github" /></svg>
+            <span>GitHub</span>
           </a>
-        </div>
+        </nav>
       </div>
+    </header>
 
-      <div class="desktop-stage" id="preview" aria-label="Interactive FluxBar preview">
-        <div class="desktop-wallpaper">
-          <div class="prefs-window">
-            <div class="prefs-titlebar">
-              <button class="tab is-active" type="button" data-hero-tab="settings" aria-pressed="true">Settings</button>
-              <button class="tab" type="button" data-hero-tab="history" aria-pressed="false">History</button>
-              <span class="close-dot">×</span>
+    <main id="main">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <span class="pill"><b>GNOME Shell</b> Extension for GNOME 45 to 50</span>
+            <h1>Live network speed, <em>right in the top bar.</em></h1>
+            <p class="lede">
+              FluxBar keeps your current upload and download speed visible without opening a system
+              monitor, with practical settings for source, format, units, refresh rate, styling and
+              30 days of usage history.
+            </p>
+            <div class="actions">
+              <a class="btn btn-primary" href="#install">
+                <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-download" /></svg>
+                <span>Install locally</span>
+              </a>
+              <a class="btn btn-secondary" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
+                <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-github" /></svg>
+                <span>View source</span>
+              </a>
             </div>
-            <div class="hero-tab-panel is-active" data-hero-panel="settings">
-              <div class="mock-section">
-                <h3>Display</h3>
-                <div class="mock-list">
-                  <div class="mock-row">
-                    <span>Speed</span>
-                    <div class="segmented two"><b>Download and Upload</b><b>Total Speed</b></div>
+            <ul class="checks">
+              <li><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>No telemetry</li>
+              <li><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>No account</li>
+              <li><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>Local history</li>
+              <li><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>Open source</li>
+            </ul>
+          </div>
+
+          <!-- Product mock: the GNOME top bar and the FluxBar preferences window, drawn in HTML and CSS -->
+          <div class="mock desk" id="mock">
+            <div class="gpanel">
+              <span class="gp-activities" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></span>
+              <span class="gp-clock" aria-hidden="true">Thu 10:42</span>
+              <div class="gp-right">
+                <button class="gp-flux" id="heroReadout" type="button" aria-describedby="heroTip" aria-label="FluxBar speed readout, select to show details">
+                  <span class="readout" data-readout></span>
+                </button>
+                <span class="gp-status" aria-hidden="true">
+                  <svg class="ic"><use href="assets/icons.svg#i-wifi" /></svg>
+                  <svg class="ic"><use href="assets/icons.svg#i-volume" /></svg>
+                  <svg class="ic"><use href="assets/icons.svg#i-battery" /></svg>
+                  <svg class="ic"><use href="assets/icons.svg#i-power" /></svg>
+                </span>
+              </div>
+              <div class="gp-tip" id="heroTip" role="status">
+                <span>Download: <b data-tip="down">120 KB/s</b></span>
+                <span>Upload: <b data-tip="up">35 KB/s</b></span>
+                <span>Total: <b data-tip="total">155 KB/s</b></span>
+              </div>
+            </div>
+
+            <div class="desk-body">
+              <div class="prefs-win" aria-label="FluxBar preferences window preview">
+                <div class="prefs-head">
+                  <div class="prefs-tabs" role="tablist" aria-label="Preferences pages">
+                    <button type="button" role="tab" aria-selected="true" aria-controls="heroSettings" id="heroTabSettings" data-hero-tab="settings">
+                      <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-sliders" /></svg>Settings
+                    </button>
+                    <button type="button" role="tab" aria-selected="false" aria-controls="heroHistory" id="heroTabHistory" data-hero-tab="history" tabindex="-1">
+                      <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-history" /></svg>History
+                    </button>
                   </div>
-                  <div class="mock-row">
-                    <span>Format</span>
-                    <div class="segmented three"><b>↓ 120 KB/s ↑ 35 KB/s</b><b>120K / 35K</b><b>120↓ 35↑</b></div>
+                  <span class="prefs-close" aria-hidden="true"><svg class="ic"><use href="assets/icons.svg#i-close" /></svg></span>
+                </div>
+
+                <div class="prefs-page" id="heroSettings" role="tabpanel" aria-labelledby="heroTabSettings" data-hero-panel="settings">
+                  <h3>Display</h3>
+                  <div class="prefs-group">
+                    <div class="prefs-row">
+                      <span>Speed</span>
+                      <span class="seg-mini"><b class="on">Download and Upload</b><b>Total Speed</b></span>
+                    </div>
+                    <div class="prefs-row">
+                      <span>Format</span>
+                      <span class="seg-mini">
+                        <b class="on"><span class="readout"><svg class="ic"><use href="assets/icons.svg#i-arrow-down" /></svg>120 KB/s <svg class="ic"><use href="assets/icons.svg#i-arrow-up" /></svg>35 KB/s</span></b>
+                        <b>120K / 35K</b>
+                        <b><span class="readout">120<svg class="ic"><use href="assets/icons.svg#i-arrow-down" /></svg> 35<svg class="ic"><use href="assets/icons.svg#i-arrow-up" /></svg></span></b>
+                      </span>
+                    </div>
+                    <div class="prefs-row">
+                      <span>Network Source</span>
+                      <span class="seg-mini"><b class="on">Automatic</b><b>Wi-Fi</b><b>Ethernet</b><b>All</b></span>
+                    </div>
+                    <div class="prefs-row">
+                      <span>Hover Details</span>
+                      <i class="switch on" aria-hidden="true"></i>
+                    </div>
                   </div>
-                  <div class="mock-row">
-                    <span>Network Source</span>
-                    <div class="segmented four"><b>Automatic</b><b>Wi-Fi</b><b>Ethernet</b><b>All</b></div>
+                  <h3>Update Frequency</h3>
+                  <div class="prefs-group">
+                    <div class="prefs-row">
+                      <span>Refresh</span>
+                      <span class="seg-mini"><b class="on">1s</b><b>2s</b><b>3s</b><b>5s</b></span>
+                    </div>
                   </div>
-                  <div class="mock-row">
-                    <span>Hover Details</span>
-                    <i class="mock-switch is-on"></i>
+                </div>
+
+                <div class="prefs-page" id="heroHistory" role="tabpanel" aria-labelledby="heroTabHistory" data-hero-panel="history" hidden>
+                  <h3>Data Consumption</h3>
+                  <p class="prefs-sub">Last 30 days of recorded network usage.</p>
+                  <div class="prefs-group">
+                    <div class="hist-row sel"><b>Today</b><span>Download 2.48 GB</span><span>Upload 2.44 GB</span><span>Total 4.92 GB</span></div>
+                    <div class="hist-row"><b>Yesterday</b><span>Download 14.10 GB</span><span>Upload 10.30 GB</span><span>Total 24.40 GB</span></div>
+                    <div class="hist-row"><b>May 12</b><span>Download 8.17 GB</span><span>Upload 7.16 GB</span><span>Total 15.34 GB</span></div>
+                    <div class="hist-row"><b>May 11</b><span>Download 82.2 MB</span><span>Upload 1.40 GB</span><span>Total 1.48 GB</span></div>
                   </div>
                 </div>
               </div>
-              <div class="mock-section small">
-                <h3>Update Frequency</h3>
-                <div class="mock-row single">
-                  <span>Refresh</span>
-                  <div class="segmented four compact"><b>1s</b><b>2s</b><b>3s</b><b>5s</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wrap">
+          <ul class="stats" aria-label="FluxBar highlights">
+            <!-- The download count is refreshed daily into data/extension-stats.json; this value is the fallback. -->
+            <li><strong id="extensionDownloads">69</strong><span>GNOME downloads</span></li>
+            <li><strong>1s</strong><span>default refresh</span></li>
+            <li><strong>30 days</strong><span>local usage history</span></li>
+            <li><strong>0</strong><span>telemetry calls</span></li>
+            <li><strong>45-50</strong><span>GNOME Shell</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section class="section tint" id="features">
+        <div class="wrap">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Small surface, real control</span>
+            <h2>The settings window is the feature list.</h2>
+            <p>Each feature below is a switch or a choice in the FluxBar preferences window.</p>
+          </div>
+
+          <div class="features">
+            <article class="card" data-reveal>
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-activity" /></svg></div>
+              <h3>Live speed at a glance</h3>
+              <p>Show separate upload and download values, or collapse them into one total speed indicator.</p>
+            </article>
+            <article class="card" data-reveal style="--d: 0.04s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-type" /></svg></div>
+              <h3>Compact formats</h3>
+              <p>Choose standard text or compact labels like <code>120K / 35K</code>, with or without direction markers.</p>
+            </article>
+            <article class="card" data-reveal style="--d: 0.08s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-wifi" /></svg></div>
+              <h3>Network source choice</h3>
+              <p>Use automatic detection, Wi-Fi, Ethernet, or all recognized real interfaces.</p>
+            </article>
+            <article class="card" data-reveal>
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-history" /></svg></div>
+              <h3>Usage history</h3>
+              <p>Review daily download, upload, and total usage from the last 30 days.</p>
+            </article>
+            <article class="card" data-reveal style="--d: 0.04s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-binary" /></svg></div>
+              <h3>Bytes or bits</h3>
+              <p>Switch speed units depending on whether you prefer file-transfer style or network-rate style numbers.</p>
+            </article>
+            <article class="card" data-reveal style="--d: 0.08s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-eye-off" /></svg></div>
+              <h3>Idle-aware label</h3>
+              <p>Hide the top bar indicator when the selected network source has no active traffic.</p>
+            </article>
+            <article class="card" data-reveal>
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-pointer" /></svg></div>
+              <h3>Hover breakdown</h3>
+              <p>Hover the panel label to see download, upload, and total speed details in one compact tooltip.</p>
+            </article>
+            <article class="card" data-reveal style="--d: 0.04s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-palette" /></svg></div>
+              <h3>Panel styling</h3>
+              <p>Use normal or bold text and optionally set a custom top bar label color.</p>
+            </article>
+            <article class="card" data-reveal style="--d: 0.08s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-timer" /></svg></div>
+              <h3>Refresh choices</h3>
+              <p>Pick a 1, 2, 3, or 5 second update interval to balance freshness with calmness.</p>
+            </article>
+            <article class="card" data-reveal>
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-cpu" /></svg></div>
+              <h3>Local counters</h3>
+              <p>Reads Linux interface counters from <code>/proc/net/dev</code> and ignores virtual adapters in automatic mode.</p>
+            </article>
+            <article class="card" data-reveal style="--d: 0.04s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-shield" /></svg></div>
+              <h3>No telemetry</h3>
+              <p>No accounts, analytics, network calls, or external services. Usage history stays on your machine.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive preview -->
+      <section class="section" id="preferences">
+        <div class="wrap split">
+          <div data-reveal>
+            <div class="section-head">
+              <span class="eyebrow">Interactive preview</span>
+              <h2>Tune the label before you install.</h2>
+              <p>These are the same choices FluxBar offers in its preferences. Change one and the top bar below updates.</p>
+            </div>
+
+            <div class="controls" id="controls">
+              <div class="control">
+                <span class="label" id="lblDisplay">Display</span>
+                <div class="seg" role="radiogroup" aria-labelledby="lblDisplay" data-control="display">
+                  <button type="button" role="radio" aria-checked="true" data-value="separate">Download and Upload</button>
+                  <button type="button" role="radio" aria-checked="false" data-value="total">Total Speed</button>
                 </div>
               </div>
-            </div>
-            <div class="hero-tab-panel" data-hero-panel="history">
-              <div class="mock-section">
-                <h3>Data Consumption</h3>
-                <p class="mock-subtitle">Last 30 days of recorded network usage.</p>
-                <div class="mock-history-list">
-                  <div class="mock-history-row is-selected">
-                    <strong>Today</strong>
-                    <span>Download 2.48 GB · Upload 2.44 GB · Total 4.92 GB</span>
-                  </div>
-                  <div class="mock-history-row">
-                    <strong>Yesterday</strong>
-                    <span>Download 14.10 GB · Upload 10.30 GB · Total 24.40 GB</span>
-                  </div>
-                  <div class="mock-history-row">
-                    <strong>May 12</strong>
-                    <span>Download 8.17 GB · Upload 7.16 GB · Total 15.34 GB</span>
-                  </div>
-                  <div class="mock-history-row">
-                    <strong>May 11</strong>
-                    <span>Download 82.2 MB · Upload 1.40 GB · Total 1.48 GB</span>
-                  </div>
+              <div class="control">
+                <span class="label" id="lblFormat">Format</span>
+                <div class="seg" role="radiogroup" aria-labelledby="lblFormat" data-control="format">
+                  <button type="button" role="radio" aria-checked="true" data-value="standard">Standard</button>
+                  <button type="button" role="radio" aria-checked="false" data-value="compact-slash">Compact slash</button>
+                  <button type="button" role="radio" aria-checked="false" data-value="compact-arrows">Compact arrows</button>
                 </div>
+              </div>
+              <div class="control">
+                <span class="label" id="lblUnits">Units</span>
+                <div class="seg" role="radiogroup" aria-labelledby="lblUnits" data-control="units">
+                  <button type="button" role="radio" aria-checked="true" data-value="bytes">Bytes</button>
+                  <button type="button" role="radio" aria-checked="false" data-value="bits">Bits</button>
+                </div>
+              </div>
+              <div class="control control-row">
+                <label class="color-field">
+                  <span class="label">Text color</span>
+                  <span class="color-input">
+                    <input id="labelColor" type="color" value="#f6f7fb" />
+                    <code id="labelColorValue">#f6f7fb</code>
+                  </span>
+                </label>
+                <label class="toggle">
+                  <input id="boldText" type="checkbox" />
+                  <span class="track" aria-hidden="true"></span>
+                  <span>Bold panel text</span>
+                </label>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="gnome-panel">
-          <div class="panel-left" aria-label="Activities">
-            <img src="assets/ic-activities.svg" alt="">
-          </div>
-          <button class="flux-pill" id="fluxPill" type="button" aria-describedby="fluxTooltip">
-            <span id="speedText">↓ 120 KB/s ↑ 35 KB/s</span>
-          </button>
-          <div class="panel-right" aria-label="System status">
-            <img src="assets/ic-panel-wifi.svg" alt="">
-            <img src="assets/ic-battery.svg" alt="">
-          </div>
-        </div>
-        <div class="flux-tooltip" id="fluxTooltip" role="status">
-          <span>Download: <strong id="tipDown">120 KB/s</strong></span>
-          <span>Upload: <strong id="tipUp">35 KB/s</strong></span>
-          <span>Total: <strong id="tipTotal">155 KB/s</strong></span>
-        </div>
-      </div>
-    </section>
-
-    <section class="quick-strip" aria-label="FluxBar highlights">
-      <div>
-        <strong id="extensionDownloads">33</strong>
-        <span>GNOME downloads</span>
-      </div>
-      <div>
-        <strong>1s</strong>
-        <span>default refresh</span>
-      </div>
-      <div>
-        <strong>30 days</strong>
-        <span>local usage history</span>
-      </div>
-      <div>
-        <strong>0</strong>
-        <span>telemetry calls</span>
-      </div>
-      <div>
-        <strong>45-50</strong>
-        <span>GNOME Shell</span>
-      </div>
-    </section>
-
-    <section class="section" id="features">
-      <div class="section-heading">
-        <p class="eyebrow">Small Surface, Real Control</p>
-        <h2>The settings window is the feature list.</h2>
-      </div>
-      <div class="feature-grid">
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-live-speed.svg" alt=""></span>
-          <h3>Live speed at a glance</h3>
-          <p>Show separate upload and download values, or collapse them into one total speed indicator.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-compact.svg" alt=""></span>
-          <h3>Compact formats</h3>
-          <p>Choose standard text or compact labels like <code>120K / 35K</code> and <code>120K↓ 35K↑</code>.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-network.svg" alt=""></span>
-          <h3>Network source choice</h3>
-          <p>Use automatic detection, Wi-Fi, Ethernet, or all recognized real interfaces.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-history.svg" alt=""></span>
-          <h3>Usage history</h3>
-          <p>Review daily download, upload, and total usage from the last 30 days.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-compact.svg" alt=""></span>
-          <h3>Bytes or bits</h3>
-          <p>Switch speed units depending on whether you prefer file-transfer style or network-rate style numbers.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-live-speed.svg" alt=""></span>
-          <h3>Idle-aware label</h3>
-          <p>Hide the top bar indicator when the selected network source has no active traffic.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-network.svg" alt=""></span>
-          <h3>Hover breakdown</h3>
-          <p>Hover the panel label to see download, upload, and total speed details in one compact tooltip.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/fluxbar.svg" alt=""></span>
-          <h3>Panel styling</h3>
-          <p>Use normal or bold text and optionally set a custom top bar label color.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-history.svg" alt=""></span>
-          <h3>Refresh choices</h3>
-          <p>Pick a 1, 2, 3, or 5 second update interval to balance freshness with calmness.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/ic-network.svg" alt=""></span>
-          <h3>Local counters</h3>
-          <p>Reads Linux interface counters from <code>/proc/net/dev</code> and ignores virtual adapters in automatic mode.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-icon"><img src="assets/fluxbar.svg" alt=""></span>
-          <h3>No telemetry</h3>
-          <p>No accounts, analytics, network calls, or external services. Usage history stays on your machine.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section preferences-section" id="preferences">
-      <div class="section-heading">
-        <p class="eyebrow">Interactive Preview</p>
-        <h2>Tune the label before you install.</h2>
-      </div>
-      <div class="prefs-layout">
-        <div class="prefs-panel" aria-label="FluxBar preview controls">
-          <label class="control-field">
-            <span>Display</span>
-            <select id="displayMode" class="native-select" tabindex="-1" aria-hidden="true">
-              <option value="separate">Download and Upload</option>
-              <option value="total">Total Speed</option>
-            </select>
-            <div class="custom-select" data-select="displayMode"></div>
-          </label>
-          <label class="control-field">
-            <span>Format</span>
-            <select id="speedFormat" class="native-select" tabindex="-1" aria-hidden="true">
-              <option value="standard">Standard</option>
-              <option value="compact-slash">Compact Slash</option>
-              <option value="compact-arrows">Compact Arrows</option>
-            </select>
-            <div class="custom-select" data-select="speedFormat"></div>
-          </label>
-          <label class="control-field">
-            <span>Units</span>
-            <select id="unitMode" class="native-select" tabindex="-1" aria-hidden="true">
-              <option value="bytes">Bytes</option>
-              <option value="bits">Bits</option>
-            </select>
-            <div class="custom-select" data-select="unitMode"></div>
-          </label>
-          <label class="control-field">
-            <span>Text Color</span>
-            <span class="color-control">
-              <input id="labelColor" type="color" value="#f6f7fb">
-              <span id="labelColorValue">#f6f7fb</span>
-            </span>
-          </label>
-          <label class="toggle-row">
-            <input id="boldText" type="checkbox">
-            <span class="toggle-box" aria-hidden="true"></span>
-            <span>Bold panel text</span>
-          </label>
-        </div>
-        <div class="preview-panel">
-          <div class="panel-preview-card">
-            <div class="preview-topbar">
-              <span>Activities</span>
-              <strong id="prefSpeedText">↓ 120 KB/s ↑ 35 KB/s</strong>
-              <span>Wi-Fi</span>
+          <div class="preview" data-reveal style="--d: 0.08s">
+            <div class="preview-card">
+              <div class="gpanel gpanel-static">
+                <span class="gp-activities" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></span>
+                <span class="gp-clock" aria-hidden="true">Thu 10:42</span>
+                <div class="gp-right">
+                  <span class="gp-flux is-static" id="prefReadout" aria-live="off"><span class="readout" data-readout></span></span>
+                  <span class="gp-status" aria-hidden="true">
+                    <svg class="ic"><use href="assets/icons.svg#i-wifi" /></svg>
+                    <svg class="ic"><use href="assets/icons.svg#i-battery" /></svg>
+                  </span>
+                </div>
+              </div>
+              <div class="preview-tip">
+                <span>Download <b data-tip="down">120 KB/s</b></span>
+                <span>Upload <b data-tip="up">35 KB/s</b></span>
+                <span>Total <b data-tip="total">155 KB/s</b></span>
+              </div>
             </div>
-            <div class="preview-tooltip">
-              <span>Download <strong id="prefTipDown">120 KB/s</strong></span>
-              <span>Upload <strong id="prefTipUp">35 KB/s</strong></span>
-              <span>Total <strong id="prefTipTotal">155 KB/s</strong></span>
+
+            <div class="tiles">
+              <div class="tile"><small>Source</small><strong>Automatic</strong></div>
+              <div class="tile"><small>Refresh</small><strong>1s</strong></div>
+              <div class="tile"><small>History</small><strong>30 days</strong></div>
             </div>
-          </div>
 
-          <div class="preview-grid">
-            <article>
-              <span>Source</span>
-              <strong>Automatic</strong>
-            </article>
-            <article>
-              <span>Refresh</span>
-              <strong>1s</strong>
-            </article>
-            <article>
-              <span>History</span>
-              <strong>30 days</strong>
-            </article>
-          </div>
-
-          <div class="usage-preview">
-            <div class="usage-preview-heading">
-              <h3>Local by design</h3>
+            <div class="local-card">
+              <h3><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-shield" /></svg>Local by design</h3>
               <p>FluxBar reads <code>/proc/net/dev</code> and keeps usage history on your machine.</p>
+              <ul class="local-list">
+                <li><b>Today</b><span>Download 2.48 GB</span><span>Upload 2.44 GB</span></li>
+                <li><b>Yesterday</b><span>Download 14.10 GB</span><span>Upload 10.30 GB</span></li>
+              </ul>
+              <code class="path-chip">~/.local/share/fluxbar/usage.json</code>
             </div>
-            <div class="usage-preview-list">
-              <div>
-                <strong>Today</strong>
-                <span>Download 2.48 GB · Upload 2.44 GB</span>
-              </div>
-              <div>
-                <strong>Yesterday</strong>
-                <span>Download 14.10 GB · Upload 10.30 GB</span>
-              </div>
-            </div>
-            <p class="path-chip">~/.local/share/fluxbar/usage.json</p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="install-section" id="install">
-      <div class="install-copy">
-        <p class="eyebrow">Install Locally</p>
-        <h2>Clone it, then <code>make install</code></h2>
-        <p>FluxBar supports GNOME Shell 45 through 50. Clone the repository and let the included Makefile copy the files and compile the schema for you.</p>
-      </div>
-      <div class="code-panel">
-        <button class="copy-button" type="button" data-copy="installCommands">Copy</button>
-        <pre id="installCommands"><code>git clone https://github.com/piyushdoorwar/fluxbar.git
-cd fluxbar
-make install
-gnome-extensions enable fluxbar@piyushdoorwar.github.io</code></pre>
-        <p class="code-note">Then restart GNOME Shell — press <kbd>Alt</kbd>+<kbd>F2</kbd>, type <kbd>r</kbd>, Enter on X11, or log out and back in on Wayland.</p>
-      </div>
-    </section>
-  </main>
+      <!-- Install -->
+      <section class="section tint" id="install">
+        <div class="wrap">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Install locally</span>
+            <h2>Clone it, then <code>make install</code>.</h2>
+            <p>
+              FluxBar supports GNOME Shell 45 through 50. The included Makefile copies the files into
+              your extensions folder and compiles the schema for you.
+            </p>
+          </div>
 
-  <footer class="site-footer">
-    <span>FluxBar</span>
-    <span>Live network speed for GNOME.</span>
-  </footer>
+          <div class="steps">
+            <div class="step" data-reveal>
+              <h3>Clone and install</h3>
+              <p>Get the source and let <code>make</code> put it in place.</p>
+              <div class="cmd">
+                <pre><code><span class="prompt">$ </span>git clone https://github.com/piyushdoorwar/fluxbar.git
+<span class="prompt">$ </span>cd fluxbar
+<span class="prompt">$ </span>make install</code></pre>
+                <button class="copy-btn" type="button" data-copy="git clone https://github.com/piyushdoorwar/fluxbar.git&#10;cd fluxbar&#10;make install" aria-label="Copy install commands">
+                  <svg class="ic i-copy" aria-hidden="true"><use href="assets/icons.svg#i-copy" /></svg>
+                  <svg class="ic i-check" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+            <div class="step" data-reveal style="--d: 0.06s">
+              <h3>Enable the extension</h3>
+              <p>Turn FluxBar on from the terminal, or later from the GNOME Extensions app.</p>
+              <div class="cmd">
+                <pre><code><span class="prompt">$ </span>gnome-extensions enable fluxbar@piyushdoorwar.github.io</code></pre>
+                <button class="copy-btn" type="button" data-copy="gnome-extensions enable fluxbar@piyushdoorwar.github.io" aria-label="Copy enable command">
+                  <svg class="ic i-copy" aria-hidden="true"><use href="assets/icons.svg#i-copy" /></svg>
+                  <svg class="ic i-check" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+            <div class="step" data-reveal style="--d: 0.12s">
+              <h3>Restart GNOME Shell</h3>
+              <p>
+                On X11, press <kbd>Alt</kbd> + <kbd>F2</kbd>, type <kbd>r</kbd> and press <kbd>Enter</kbd>.
+                On Wayland, log out and back in. The speed appears in the top bar.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <script src="script.js"></script>
-</body>
+      <!-- CTA -->
+      <section class="section">
+        <div class="wrap">
+          <div class="cta" data-reveal>
+            <div>
+              <h2>Keep an eye on your connection.</h2>
+              <p>Free and open source under the MIT license. Small, local, and at home in the panel.</p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-primary" href="#install">
+                <span>Install locally</span>
+                <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-arrow" /></svg>
+              </a>
+              <a class="btn btn-secondary" href="https://github.com/piyushdoorwar/fluxbar/releases" rel="noreferrer">
+                <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-tag" /></svg>
+                <span>Releases</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <div>
+          <a class="brand" href="./">
+            <img src="assets/fluxbar.svg" alt="" width="26" height="26" />
+            <span>FluxBar</span>
+          </a>
+          <p>Live network speed for GNOME.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="#install"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-terminal" /></svg>Install</a>
+          <a href="https://github.com/piyushdoorwar/fluxbar/releases" rel="noreferrer"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-tag" /></svg>Releases</a>
+          <a href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-github" /></svg>GitHub</a>
+          <a href="https://github.com/piyushdoorwar/fluxbar/issues" rel="noreferrer"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-mail" /></svg>Support</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+    <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "7bf02e12b7eb4bcfb147fbf33e347cd9"}'></script><!-- End Cloudflare Web Analytics -->
+  </body>
 </html>
