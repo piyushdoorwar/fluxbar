@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set version from tag
         if: startsWith(github.ref, 'refs/tags/')
@@ -44,7 +44,7 @@ jobs:
           unzip -l "$ZIP"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: fluxbar-extension
           path: fluxbar@piyushdoorwar.github.io.zip
