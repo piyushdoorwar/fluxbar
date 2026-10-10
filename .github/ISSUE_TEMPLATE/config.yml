@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Install help
+    url: https://fluxbar.piyushdoorwar.com/#install
+    about: Install options, including extensions.gnome.org and building from source.
+  - name: Report a security issue
+    url: https://github.com/piyushdoorwar/fluxbar/security/advisories/new
+    about: Please report security problems privately, not as a public issue.

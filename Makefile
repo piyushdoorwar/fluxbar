@@ -7,14 +7,16 @@ PACK    = metadata.json extension.js prefs.js $(SCHEMA) README.md LICENSE
 EXCLUDES = --exclude='.git' --exclude='site' --exclude='.github' \
            --exclude='Makefile' --exclude='node_modules' \
            --exclude='package.json' --exclude='package-lock.json' \
-           --exclude='eslint.config.mjs' --exclude='*.zip' --exclude='CLAUDE.md'
+           --exclude='eslint.config.mjs' --exclude='*.zip' --exclude='CLAUDE.md' \
+           --exclude='scripts' --exclude='CONTRIBUTING.md' --exclude='SECURITY.md' \
+           --exclude='.editorconfig' --exclude='.gitignore' --exclude='.gitattributes' --exclude='.claude'
 
 .PHONY: install schemas reload enable disable logs pack lint uninstall
 
 ## install: sync sources into the GNOME extensions dir and compile schemas
 install:
 	mkdir -p $(EXT_DIR)
-	rsync -a --delete $(EXCLUDES) ./ $(EXT_DIR)/
+	rsync -a --delete --delete-excluded $(EXCLUDES) ./ $(EXT_DIR)/
 	glib-compile-schemas $(EXT_DIR)/schemas
 
 ## reload: reinstall, then disable+enable so GNOME Shell picks up the changes

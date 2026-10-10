@@ -27,6 +27,8 @@ gnome-extensions disable fluxbar@piyushdoorwar.github.io
 gnome-extensions enable fluxbar@piyushdoorwar.github.io
 ```
 
+`.github/workflows/ci.yml` runs on pushes/PRs (ignoring `site/`): ESLint, a `metadata.json` field check, `glib-compile-schemas --strict --dry-run`, and `make pack`. Contributor-facing docs live in `CONTRIBUTING.md`, `SECURITY.md` and `.github/ISSUE_TEMPLATE/`; keep their dev-loop instructions in sync with the Makefile.
+
 ESLint is dev-only tooling (flat config in `eslint.config.mjs`, GJS runtime globals declared there); the extension itself has no Node/npm runtime dependency.
 
 A simple `disable`/`enable` only reloads `extension.js`. The preferences UI (`prefs.js`) runs in a separate process — close and reopen the prefs window to pick up changes there. Changing the schema XML requires re-running `glib-compile-schemas` (and usually a full GNOME Shell restart) before the new keys are visible.

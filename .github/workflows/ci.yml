@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore: ["site/**"]
+  pull_request:
+    paths-ignore: ["site/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Lint
+        run: |
+          npm ci --no-audit --no-fund
+          npx eslint .
+
+      - name: Validate metadata.json
+        run: |
+          jq -e '.uuid and .name and .description and .url and (."shell-version" | length > 0) and ."settings-schema"' metadata.json > /dev/null
+
+      - name: Validate GSettings schema
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libglib2.0-bin > /dev/null
+          glib-compile-schemas --strict --dry-run schemas
+
+      - name: Build package
+        run: |
+          make pack
+          if unzip -l fluxbar@piyushdoorwar.github.io.zip | grep -q gschemas.compiled; then
+            echo "::error::gschemas.compiled must not be packaged"
+            exit 1
+          fi

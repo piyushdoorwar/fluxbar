@@ -41,9 +41,25 @@ FluxBar reads network counters from `/proc/net/dev`. By default, Automatic mode 
 ~/.local/share/fluxbar/usage.json
 ```
 
-## Install Locally
+## Install
 
-Clone the repository and run `make install`, which copies the files into the GNOME Shell extensions directory and compiles the schema:
+FluxBar is on [extensions.gnome.org](https://extensions.gnome.org/extension/9789/fluxbar/) for GNOME Shell 45 to 50. Installing from there keeps it updated automatically.
+
+- **Browser:** open the [FluxBar page](https://extensions.gnome.org/extension/9789/fluxbar/) and flip the switch. This needs the GNOME Shell integration browser add-on and the `gnome-browser-connector` package.
+- **Extension Manager:** install [Extension Manager](https://flathub.org/apps/com.mattjakeman.ExtensionManager) from Flathub, search for **FluxBar** and click Install.
+- **Terminal:** ask GNOME Shell to fetch it, then confirm the dialog:
+
+  ```sh
+  gdbus call --session \
+      --dest org.gnome.Shell.Extensions \
+      --object-path /org/gnome/Shell/Extensions \
+      --method org.gnome.Shell.Extensions.InstallRemoteExtension \
+      fluxbar@piyushdoorwar.github.io
+  ```
+
+Open FluxBar's settings from its top bar menu, or from the Extensions app.
+
+### From source
 
 ```sh
 git clone https://github.com/piyushdoorwar/fluxbar.git
@@ -51,34 +67,15 @@ cd fluxbar
 make install
 ```
 
-If you prefer not to use `make`, the equivalent commands are:
-
-```sh
-mkdir -p ~/.local/share/gnome-shell/extensions
-rsync -a --delete --exclude='.git' ./ ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/
-glib-compile-schemas ~/.local/share/gnome-shell/extensions/fluxbar@piyushdoorwar.github.io/schemas
-```
-
-Restart GNOME Shell after installing:
-
-- On X11, press `Alt` + `F2`, type `r`, then press `Enter`.
-- On Wayland, log out and log back in.
-
-Enable FluxBar:
+Then log out and back in (on X11, `Alt` + `F2`, `r`, `Enter` is enough) and enable it:
 
 ```sh
 gnome-extensions enable fluxbar@piyushdoorwar.github.io
 ```
 
-Open the GNOME Extensions app to enable, disable, or configure FluxBar:
-
-```sh
-gnome-extensions-app
-```
-
 ## Development
 
-After changing source files, reinstall and reload the extension. A `Makefile` wraps the common tasks:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide. In short, after changing source files, reinstall and reload the extension. A `Makefile` wraps the common tasks:
 
 ```sh
 make reload   # sync sources, compile schemas, disable + enable
@@ -112,3 +109,16 @@ zip -r fluxbar@piyushdoorwar.github.io.zip metadata.json extension.js prefs.js s
 ```
 
 The generated zip can be installed manually or prepared for review and distribution.
+
+## Contributing and support
+
+- Found a bug or have an idea? [Open an issue](https://github.com/piyushdoorwar/fluxbar/issues/new/choose).
+- Want to contribute code? Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+- Security problem? See [SECURITY.md](SECURITY.md).
+- Enjoying FluxBar? You can [buy me a coffee](https://buymeacoffee.com/piyushdoorwar).
+
+Website: [fluxbar.piyushdoorwar.com](https://fluxbar.piyushdoorwar.com)
+
+## License
+
+FluxBar is released under the [MIT License](LICENSE).

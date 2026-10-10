@@ -1,0 +1,86 @@
+name: Bug report
+description: Something in FluxBar is broken or behaves unexpectedly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. The details below make it much faster to reproduce.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect to see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open FluxBar settings
+        2. Set Refresh to 5s
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: extension-version
+    attributes:
+      label: FluxBar version
+      description: Shown in the Extensions app, or run `gnome-extensions info fluxbar@piyushdoorwar.github.io`.
+      placeholder: "3"
+    validations:
+      required: true
+  - type: input
+    id: shell-version
+    attributes:
+      label: GNOME Shell version
+      description: Run `gnome-shell --version`.
+      placeholder: GNOME Shell 48.2
+    validations:
+      required: true
+  - type: dropdown
+    id: session
+    attributes:
+      label: Session type
+      description: Run `echo $XDG_SESSION_TYPE`.
+      options:
+        - Wayland
+        - X11
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution
+      placeholder: Ubuntu 25.04, Fedora 42, Arch, ...
+    validations:
+      required: true
+  - type: dropdown
+    id: install-source
+    attributes:
+      label: How did you install FluxBar?
+      options:
+        - extensions.gnome.org (browser, Extension Manager or terminal)
+        - From source (make install)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: interfaces
+    attributes:
+      label: Network interfaces (for wrong or missing speeds)
+      description: Output of `ls /sys/class/net`. Helps when FluxBar shows 0 or ignores a connection.
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Run `journalctl /usr/bin/gnome-shell -b | grep -i fluxbar` (for preferences issues, `journalctl --user -b | grep -i fluxbar`).
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, other extensions you run, or anything that might be related.

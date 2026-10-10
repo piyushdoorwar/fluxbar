@@ -1,0 +1,3 @@
+# Shows a "Sponsor" button on the GitHub repo.
+# The same link is in metadata.json ("donations"), which extensions.gnome.org shows on the listing.
+buy_me_a_coffee: piyushdoorwar
