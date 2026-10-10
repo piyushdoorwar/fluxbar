@@ -115,6 +115,7 @@ The generated zip can be installed manually or prepared for review and distribut
 - Found a bug or have an idea? [Open an issue](https://github.com/piyushdoorwar/fluxbar/issues/new/choose).
 - Want to contribute code? Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 - Security problem? See [SECURITY.md](SECURITY.md).
+- Privacy: FluxBar collects nothing and makes no network requests. See the [privacy policy](https://fluxbar.piyushdoorwar.com/policy/).
 - Enjoying FluxBar? You can [buy me a coffee](https://buymeacoffee.com/piyushdoorwar).
 
 Website: [fluxbar.piyushdoorwar.com](https://fluxbar.piyushdoorwar.com)

@@ -438,6 +438,24 @@ button { font: inherit; }
 .step-note { color: var(--muted); font-size: 14px; }
 .step-note b { color: var(--ink); font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
+/* ---- Policy page ------------------------------------------------------ */
+.page-hero { padding: clamp(48px, 7vw, 80px) 0 clamp(28px, 4vw, 40px); border-bottom: 1px solid var(--border); background: var(--surface); }
+.page-hero h1 { margin-top: 12px; font-size: clamp(32px, 5vw, 48px); letter-spacing: -0.03em; }
+.page-hero p { margin-top: 12px; color: var(--muted); font-size: 18px; max-width: 640px; }
+.page-hero .updated { font-size: 14px; }
+.page-body { padding: clamp(32px, 5vw, 56px) 0 clamp(64px, 8vw, 96px); }
+.narrow { max-width: 820px; }
+.prose-card { padding: 24px 26px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
+.prose-card + .prose-card { margin-top: 16px; }
+.prose-card h2 { display: flex; align-items: center; gap: 10px; font-size: 20px; }
+.prose-card h2 .ic { color: var(--accent-text); width: 20px; height: 20px; }
+.prose-card p, .prose-card li { color: var(--text); }
+.prose-card p { margin-top: 10px; }
+.prose-card ul { margin: 10px 0 0; padding-left: 20px; }
+.prose-card li + li { margin-top: 6px; }
+.prose-card .cmd { margin-top: 12px; }
+.prose-card.callout { border-color: var(--accent-line); background: linear-gradient(var(--accent-softer), var(--accent-softer)), var(--surface); }
+
 /* ---- Features --------------------------------------------------------- */
 .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .card {
@@ -571,6 +589,7 @@ button { font: inherit; }
   .stats li:first-child { grid-column: 1 / -1; }
 }
 @media (max-width: 600px) {
+  .prose-card { padding: 20px 18px; }
   .features { grid-template-columns: minmax(0, 1fr); }
   .hero .actions .btn, .cta .actions .btn { flex: 1 1 auto; }
   .step { grid-template-columns: minmax(0, 1fr); padding: 18px; }
