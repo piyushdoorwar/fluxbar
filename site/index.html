@@ -243,44 +243,49 @@
             <article class="card" data-reveal style="--d: 0.08s">
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-wifi" /></svg></div>
               <h3>Network source choice</h3>
-              <p>Use automatic detection, Wi-Fi, Ethernet, or all recognized real interfaces.</p>
+              <p>Use automatic detection, Wi-Fi, Ethernet, or all real interfaces. Mobile broadband and USB tethering count too.</p>
             </article>
             <article class="card" data-reveal>
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-history" /></svg></div>
               <h3>Usage history</h3>
-              <p>Review daily download, upload, and total usage from the last 30 days.</p>
+              <p>Review daily download, upload, and total usage for the last 30 days, with totals, and clear it whenever you like.</p>
             </article>
             <article class="card" data-reveal style="--d: 0.04s">
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-binary" /></svg></div>
               <h3>Bytes or bits</h3>
-              <p>Switch speed units depending on whether you prefer file-transfer style or network-rate style numbers.</p>
+              <p>File-transfer style KB/s or network-rate style Kb/s, scaling all the way up to GB/s on fast links.</p>
             </article>
             <article class="card" data-reveal style="--d: 0.08s">
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-eye-off" /></svg></div>
               <h3>Idle-aware label</h3>
-              <p>Hide the top bar indicator when the selected network source has no active traffic.</p>
+              <p>Hide the label after a few quiet seconds, with an idle threshold so background chatter doesn&rsquo;t keep it visible.</p>
             </article>
             <article class="card" data-reveal>
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-pointer" /></svg></div>
-              <h3>Hover breakdown</h3>
-              <p>Hover the panel label to see download, upload, and total speed details in one compact tooltip.</p>
+              <h3>Hover and click details</h3>
+              <p>Hover for download, upload, and total speed. Click for today&rsquo;s and the last 30 days&rsquo; usage.</p>
             </article>
             <article class="card" data-reveal style="--d: 0.04s">
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-palette" /></svg></div>
-              <h3>Panel styling</h3>
-              <p>Use normal or bold text and optionally set a custom top bar label color.</p>
+              <h3>Placement and styling</h3>
+              <p>Put it on the left, center, or right of the top bar, with normal or bold text and an optional custom color.</p>
             </article>
             <article class="card" data-reveal style="--d: 0.08s">
+              <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-sliders" /></svg></div>
+              <h3>Steady width</h3>
+              <p>The label reserves room for its widest value, so your top bar doesn&rsquo;t shuffle every time the speed changes.</p>
+            </article>
+            <article class="card" data-reveal>
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-timer" /></svg></div>
               <h3>Refresh choices</h3>
               <p>Pick a 1, 2, 3, or 5 second update interval to balance freshness with calmness.</p>
             </article>
-            <article class="card" data-reveal>
+            <article class="card" data-reveal style="--d: 0.04s">
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-cpu" /></svg></div>
               <h3>Local counters</h3>
               <p>Reads Linux interface counters from <code>/proc/net/dev</code> and ignores virtual adapters in automatic mode.</p>
             </article>
-            <article class="card" data-reveal style="--d: 0.04s">
+            <article class="card" data-reveal style="--d: 0.08s">
               <div class="icon"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-shield" /></svg></div>
               <h3>No telemetry</h3>
               <p>No accounts, analytics, network calls, or external services. Usage history stays on your machine.</p>
@@ -322,6 +327,14 @@
                   <button type="button" role="radio" aria-checked="false" data-value="bits">Bits</button>
                 </div>
               </div>
+              <div class="control">
+                <span class="label" id="lblPosition">Position</span>
+                <div class="seg" role="radiogroup" aria-labelledby="lblPosition" data-control="position">
+                  <button type="button" role="radio" aria-checked="false" data-value="left">Left</button>
+                  <button type="button" role="radio" aria-checked="false" data-value="center">Center</button>
+                  <button type="button" role="radio" aria-checked="true" data-value="right">Right</button>
+                </div>
+              </div>
               <div class="control control-row">
                 <label class="color-field">
                   <span class="label">Text color</span>
@@ -342,9 +355,13 @@
           <div class="preview" data-reveal style="--d: 0.08s">
             <div class="preview-card">
               <div class="gpanel gpanel-static">
-                <span class="gp-activities" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></span>
-                <span class="gp-clock" aria-hidden="true">Thu 10:42</span>
-                <div class="gp-right">
+                <div class="gp-left" data-slot="left">
+                  <span class="gp-activities" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></span>
+                </div>
+                <div class="gp-center" data-slot="center">
+                  <span class="gp-clock" aria-hidden="true">Thu 10:42</span>
+                </div>
+                <div class="gp-right" data-slot="right">
                   <span class="gp-flux is-static" id="prefReadout" aria-live="off"><span class="readout" data-readout></span></span>
                   <span class="gp-status" aria-hidden="true">
                     <svg class="ic"><use href="assets/icons.svg#i-wifi" /></svg>
@@ -361,7 +378,7 @@
 
             <div class="tiles">
               <div class="tile"><small>Source</small><strong>Automatic</strong></div>
-              <div class="tile"><small>Refresh</small><strong>1s</strong></div>
+              <div class="tile"><small>Idle below</small><strong>1 KB/s</strong></div>
               <div class="tile"><small>History</small><strong>30 days</strong></div>
             </div>
 

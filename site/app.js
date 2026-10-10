@@ -103,39 +103,33 @@
   }
 
   // ---- Speed readout ----------------------------------------------------
-  // Mirrors the extension's formatting: bytes use base 1024, bits use base 1000.
+  // Mirrors the extension's formatRate(): bytes use base 1024, bits base 1000, and
+  // values scale to at most three digits (999 KB/s rolls over to 1.0 MB/s).
   const readouts = document.querySelectorAll("[data-readout]");
   if (!readouts.length) return;
 
-  const state = { display: "separate", format: "standard", units: "bytes", color: "#f6f7fb", bold: false };
+  const state = { display: "separate", format: "standard", units: "bytes", position: "right", color: "#f6f7fb", bold: false };
   let downloadBytes = 122880;
   let uploadBytes = 35840;
 
-  function formatSpeed(bytesPerSecond) {
-    if (state.units === "bits") {
-      const bits = bytesPerSecond * 8;
-      if (bits < 1000) return `${bits} b/s`;
-      if (bits < 1000000) return `${Math.round(bits / 1000)} Kb/s`;
-      return `${(bits / 1000000).toFixed(1)} Mb/s`;
-    }
-    if (bytesPerSecond < 1024) return `${bytesPerSecond} B/s`;
-    if (bytesPerSecond < 1048576) return `${Math.round(bytesPerSecond / 1024)} KB/s`;
-    return `${(bytesPerSecond / 1048576).toFixed(1)} MB/s`;
-  }
-
-  function formatCompact(bytesPerSecond) {
+  function formatRate(bytesPerSecond, compact) {
     const useBits = state.units === "bits";
+    const units = useBits
+      ? compact ? ["b", "Kb", "Mb", "Gb"] : ["b/s", "Kb/s", "Mb/s", "Gb/s"]
+      : compact ? ["B", "K", "M", "G"] : ["B/s", "KB/s", "MB/s", "GB/s"];
     const base = useBits ? 1000 : 1024;
-    const units = useBits ? ["b", "Kb", "Mb", "Gb"] : ["B", "K", "M", "G"];
-    let scaled = useBits ? bytesPerSecond * 8 : bytesPerSecond;
+    let value = useBits ? bytesPerSecond * 8 : bytesPerSecond;
     let unit = 0;
-    while (scaled >= base && unit < units.length - 1) {
-      scaled /= base;
+    while (value >= 999.5 && unit < units.length - 1) {
+      value /= base;
       unit += 1;
     }
-    const shown = scaled < 10 && unit > 0 ? scaled.toFixed(1) : Math.round(scaled).toString();
-    return `${shown}${units[unit]}`;
+    const shown = unit === 0 || value >= 9.95 ? Math.round(value).toString() : value.toFixed(1);
+    return `${shown}${compact ? "" : " "}${units[unit]}`;
   }
+
+  const formatSpeed = (bytesPerSecond) => formatRate(bytesPerSecond, false);
+  const formatCompact = (bytesPerSecond) => formatRate(bytesPerSecond, true);
 
   // Readout parts: strings are text, {icon} entries become sprite icons.
   function readoutParts() {
@@ -179,6 +173,14 @@
     document.querySelectorAll("[data-tip]").forEach((el) => {
       el.textContent = values[el.dataset.tip];
     });
+    // Position preview: left and center go after the existing items, right goes
+    // before the status icons, matching where the extension inserts itself.
+    const prefReadout = document.getElementById("prefReadout");
+    const slot = document.querySelector(`[data-slot="${state.position}"]`);
+    if (prefReadout && slot && prefReadout.parentElement !== slot) {
+      if (state.position === "right") slot.prepend(prefReadout);
+      else slot.append(prefReadout);
+    }
   }
 
   // Segmented controls in the preferences preview

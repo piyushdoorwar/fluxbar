@@ -298,6 +298,8 @@ button { font: inherit; }
 .gp-activities i { width: 6px; height: 6px; border-radius: 999px; background: var(--gp-dot); }
 .gp-activities i.on { width: 18px; background: var(--gp-text); }
 .gp-clock { color: var(--gp-text); white-space: nowrap; }
+.gp-left, .gp-center { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.gp-left { justify-self: start; }
 .gp-right { display: flex; align-items: center; justify-content: flex-end; gap: 2px; min-width: 0; }
 .gp-flux {
   display: inline-flex; align-items: center; height: 26px; padding: 0 10px;
