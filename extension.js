@@ -9,23 +9,32 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
+import {USAGE_DAYS_TO_KEEP, formatBytes, getUsageFilePath, sumUsage} from './utils.js';
+
 const DEFAULT_UPDATE_INTERVAL_MS = 1000;
 const PROC_NET_DEV = '/proc/net/dev';
-const USAGE_DAYS_TO_KEEP = 30;
 const USAGE_FLUSH_INTERVAL_MS = 30000;
 const VALID_UPDATE_INTERVALS_MS = [1000, 2000, 3000, 5000];
 const VALID_NETWORK_SOURCES = ['automatic', 'wifi', 'ethernet', 'all'];
 const VALID_SPEED_FORMATS = ['standard', 'compact-slash', 'compact-arrows'];
 const VALID_TEXT_WEIGHTS = ['normal', 'bold'];
+const VALID_IDLE_THRESHOLDS = [0, 1024, 10240, 102400];
+const VALID_PANEL_POSITIONS = ['left', 'center', 'right'];
+const DEFAULT_IDLE_THRESHOLD = 1024;
+// How long traffic must stay at or below the idle threshold before the label hides,
+// so a brief lull between bursts doesn't make the top bar jump.
+const IDLE_HIDE_DELAY_US = 3 * GLib.USEC_PER_SEC;
+// Tabular digits keep every digit the same width, so the label doesn't wobble as values change.
+const BASE_LABEL_STYLE = 'margin-top: 2px; font-feature-settings: "tnum";';
+const BYTE_UNITS = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+const BIT_UNITS = ['b/s', 'Kb/s', 'Mb/s', 'Gb/s'];
+const COMPACT_BYTE_UNITS = ['B', 'K', 'M', 'G'];
+const COMPACT_BIT_UNITS = ['b', 'Kb', 'Mb', 'Gb'];
 const TOOLTIP_OFFSET = 6;
 const TOOLTIP_ANIMATION_TIME = 150;
 
 function getTodayKey() {
     return GLib.DateTime.new_now_local().format('%F');
-}
-
-function getUsageFilePath() {
-    return GLib.build_filenamev([GLib.get_user_data_dir(), 'fluxbar', 'usage.json']);
 }
 
 function pruneUsage(usage) {
@@ -86,20 +95,66 @@ function shouldIncludeInterface(name, selectedSource) {
     return type === 'wifi' || type === 'ethernet' || type === 'mobile';
 }
 
+function getRateUnits(useBits, compact) {
+    if (useBits)
+        return compact ? COMPACT_BIT_UNITS : BIT_UNITS;
+
+    return compact ? COMPACT_BYTE_UNITS : BYTE_UNITS;
+}
+
+// Scales to at most three significant digits so the label width stays bounded:
+// 999 KB/s rolls over to 1.0 MB/s rather than showing 1000 KB/s.
+function formatRate(bytesPerSecond, useBits, compact) {
+    const units = getRateUnits(useBits, compact);
+    const base = useBits ? 1000 : 1024;
+    let value = useBits ? bytesPerSecond * 8 : bytesPerSecond;
+    let unitIndex = 0;
+
+    while (value >= 999.5 && unitIndex < units.length - 1) {
+        value /= base;
+        unitIndex++;
+    }
+
+    const number = unitIndex === 0 || value >= 9.95 ? Math.round(value).toString() : value.toFixed(1);
+    return `${number}${compact ? '' : ' '}${units[unitIndex]}`;
+}
+
+// The widest text formatRate() can produce for these units. It sizes an invisible
+// placeholder behind the label so the label never changes width.
+function widestRate(useBits, compact) {
+    return `888${compact ? '' : ' '}${getRateUnits(useBits, compact)[2]}`;
+}
+
 const FluxBarIndicator = GObject.registerClass(
 class FluxBarIndicator extends PanelMenu.Button {
-    _init(openPreferences) {
+    _init(openPreferences, onMenuOpened) {
         super._init(0.0, 'FluxBar Indicator');
 
         this._tooltipEnabled = true;
 
-        this._label = new St.Label({
-            text: '↓ 0 B/s ↑ 0 B/s',
+        // The label sits on top of an invisible placeholder holding the widest
+        // possible text; the BinLayout sizes the box to the larger of the two.
+        const labelBox = new St.Widget({
+            layout_manager: new Clutter.BinLayout(),
             y_align: Clutter.ActorAlign.CENTER,
-            style: 'margin-top: 2px;',
         });
 
-        this.add_child(this._label);
+        this._sizer = new St.Label({
+            opacity: 0,
+            y_align: Clutter.ActorAlign.CENTER,
+            style: BASE_LABEL_STYLE,
+        });
+
+        this._label = new St.Label({
+            text: '↓ 0 B/s ↑ 0 B/s',
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            style: BASE_LABEL_STYLE,
+        });
+
+        labelBox.add_child(this._sizer);
+        labelBox.add_child(this._label);
+        this.add_child(labelBox);
 
         this._tooltip = new St.Label({
             style_class: 'dash-label',
@@ -108,16 +163,33 @@ class FluxBarIndicator extends PanelMenu.Button {
         });
         Main.uiGroup.add_child(this._tooltip);
 
+        this._todayItem = new PopupMenu.PopupMenuItem('', {reactive: false, can_focus: false});
+        this._rangeItem = new PopupMenu.PopupMenuItem('', {reactive: false, can_focus: false});
+        this.menu.addMenuItem(this._todayItem);
+        this.menu.addMenuItem(this._rangeItem);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
         const settingsItem = new PopupMenu.PopupMenuItem('Settings');
         settingsItem.connect('activate', () => openPreferences());
         this.menu.addMenuItem(settingsItem);
+
+        this.menu.connect('open-state-changed', (_menu, open) => {
+            if (open)
+                onMenuOpened();
+        });
 
         this.connect('notify::hover', () => this._syncTooltip());
         this.connect('destroy', () => this._tooltip.destroy());
     }
 
-    setSpeedText(text) {
+    setSpeedText(text, widestText) {
         this._label.text = text;
+        this._sizer.text = widestText;
+    }
+
+    setUsageSummary(todayText, rangeText) {
+        this._todayItem.label.text = todayText;
+        this._rangeItem.label.text = rangeText;
     }
 
     setTooltipText(text) {
@@ -140,7 +212,9 @@ class FluxBarIndicator extends PanelMenu.Button {
     }
 
     setLabelStyle(style) {
+        // The placeholder must share the label's font weight or its width would be wrong.
         this._label.style = style;
+        this._sizer.style = style;
     }
 
     _syncTooltip() {
@@ -188,6 +262,7 @@ export default class FluxBarExtension extends Extension {
         this._downloadSpeed = 0;
         this._uploadSpeed = 0;
         this._hasSelectedInterface = false;
+        this._lastActiveTime = 0;
 
         Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
         Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
@@ -206,14 +281,21 @@ export default class FluxBarExtension extends Extension {
                 this._hasSelectedInterface = this._previousStats?.hasSelectedInterface ?? false;
             } else if (key === 'show-hover-details') {
                 this._indicator?.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
+            } else if (key === 'panel-position') {
+                if (this._indicator)
+                    this._createIndicator();
+            } else if (key === 'history-cleared-at') {
+                // The preferences window cleared the history file; drop the in-memory
+                // copy too, or the next flush would write it straight back.
+                this._usage = {};
+                this._usageDirty = true;
+                await this._flushUsage();
+                return;
             }
 
             this._render();
         });
-        this._indicator = new FluxBarIndicator(() => this.openPreferences());
-        this._indicator.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
-
-        Main.panel.addToStatusArea(this.uuid, this._indicator);
+        this._createIndicator();
 
         this._usage = await this._readUsage();
         if (!this._indicator) return;
@@ -250,6 +332,35 @@ export default class FluxBarExtension extends Extension {
         this._settings?.disconnect(this._settingsChangedId);
         this._settingsChangedId = 0;
         this._settings = null;
+    }
+
+    _createIndicator() {
+        this._indicator?.destroy();
+
+        this._indicator = new FluxBarIndicator(
+            () => this.openPreferences(),
+            () => this._refreshUsageSummary()
+        );
+        this._indicator.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
+
+        // Index 1 in the right box is GNOME's default slot for status indicators;
+        // in the left and center boxes, FluxBar goes after the existing items.
+        const position = this._getPanelPosition();
+        Main.panel.addToStatusArea(this.uuid, this._indicator, position === 'right' ? 1 : -1, position);
+    }
+
+    _refreshUsageSummary() {
+        if (!this._indicator)
+            return;
+
+        const usage = this._usage ?? {};
+        const today = usage[getTodayKey()] ?? {rxBytes: 0, txBytes: 0};
+        const range = sumUsage(usage);
+
+        this._indicator.setUsageSummary(
+            `Today   ↓ ${formatBytes(today.rxBytes)}   ↑ ${formatBytes(today.txBytes)}`,
+            `Last ${USAGE_DAYS_TO_KEEP} days   ↓ ${formatBytes(range.rxBytes)}   ↑ ${formatBytes(range.txBytes)}`
+        );
     }
 
     _restartTimer() {
@@ -316,6 +427,24 @@ export default class FluxBarExtension extends Extension {
             return weight;
 
         return 'normal';
+    }
+
+    _getIdleThreshold() {
+        const threshold = this._settings?.get_int('idle-threshold') ?? DEFAULT_IDLE_THRESHOLD;
+
+        if (VALID_IDLE_THRESHOLDS.includes(threshold))
+            return threshold;
+
+        return DEFAULT_IDLE_THRESHOLD;
+    }
+
+    _getPanelPosition() {
+        const position = this._settings?.get_string('panel-position') ?? 'right';
+
+        if (VALID_PANEL_POSITIONS.includes(position))
+            return position;
+
+        return 'right';
     }
 
     async _update() {
@@ -413,7 +542,10 @@ export default class FluxBarExtension extends Extension {
         if (!this._indicator)
             return;
 
-        this._indicator.setSpeedText(this._buildSpeedText(this._downloadSpeed, this._uploadSpeed));
+        this._indicator.setSpeedText(
+            this._buildSpeedText(this._downloadSpeed, this._uploadSpeed),
+            this._buildSpeedText(0, 0, true)
+        );
         this._indicator.setTooltipText(this._buildTooltipText(this._downloadSpeed, this._uploadSpeed));
         this._updateVisibility(this._hasSelectedInterface, this._downloadSpeed + this._uploadSpeed);
         this._applyColor();
@@ -424,92 +556,51 @@ export default class FluxBarExtension extends Extension {
             return;
 
         const hideWhenIdle = this._settings?.get_boolean('hide-when-idle') ?? true;
-        this._indicator.setIndicatorVisible(!hideWhenIdle || (hasSelectedInterface && totalBytes > 0));
+        const now = GLib.get_monotonic_time();
+
+        if (hasSelectedInterface && totalBytes > this._getIdleThreshold())
+            this._lastActiveTime = now;
+
+        const recentlyActive = this._lastActiveTime > 0 && now - this._lastActiveTime < IDLE_HIDE_DELAY_US;
+        this._indicator.setIndicatorVisible(!hideWhenIdle || (hasSelectedInterface && recentlyActive));
     }
 
-    _formatSpeed(bytesPerSecond) {
-        if (this._settings?.get_string('unit-mode') === 'bits')
-            return this._formatBitsSpeed(bytesPerSecond);
-
-        if (bytesPerSecond < 1024)
-            return `${bytesPerSecond} B/s`;
-
-        const kibPerSecond = bytesPerSecond / 1024;
-
-        if (kibPerSecond < 1024)
-            return `${Math.round(kibPerSecond)} KB/s`;
-
-        const mibPerSecond = kibPerSecond / 1024;
-        return `${mibPerSecond.toFixed(1)} MB/s`;
+    _useBits() {
+        return this._settings?.get_string('unit-mode') === 'bits';
     }
 
-    _formatBitsSpeed(bytesPerSecond) {
-        const bitsPerSecond = bytesPerSecond * 8;
-
-        if (bitsPerSecond < 1000)
-            return `${bitsPerSecond} b/s`;
-
-        const kibPerSecond = bitsPerSecond / 1000;
-
-        if (kibPerSecond < 1000)
-            return `${Math.round(kibPerSecond)} Kb/s`;
-
-        const mibPerSecond = kibPerSecond / 1000;
-        return `${mibPerSecond.toFixed(1)} Mb/s`;
-    }
-
-    _formatCompactSpeed(bytesPerSecond) {
-        const useBits = this._settings?.get_string('unit-mode') === 'bits';
-        const value = useBits ? bytesPerSecond * 8 : bytesPerSecond;
-        const base = useBits ? 1000 : 1024;
-        const units = useBits ? ['b', 'Kb', 'Mb', 'Gb'] : ['B', 'K', 'M', 'G'];
-
-        if (value < base)
-            return `${value}${units[0]}`;
-
-        let scaledValue = value;
-        let unitIndex = 0;
-
-        while (scaledValue >= base && unitIndex < units.length - 1) {
-            scaledValue /= base;
-            unitIndex++;
-        }
-
-        const formattedValue = scaledValue < 10 ? scaledValue.toFixed(1) : Math.round(scaledValue).toString();
-        return `${formattedValue}${units[unitIndex]}`;
-    }
-
-    _buildSpeedText(downloadBytes, uploadBytes) {
+    // With `widest`, returns the widest text this format can produce instead of
+    // the real values (see widestRate()).
+    _buildSpeedText(downloadBytes, uploadBytes, widest = false) {
         const speedFormat = this._getSpeedFormat();
-
-        if (speedFormat !== 'standard') {
-            if (this._settings?.get_string('display-mode') === 'total')
-                return this._formatCompactSpeed(downloadBytes + uploadBytes);
-
-            const downloadSpeed = this._formatCompactSpeed(downloadBytes);
-            const uploadSpeed = this._formatCompactSpeed(uploadBytes);
-
-            if (speedFormat === 'compact-arrows')
-                return `${downloadSpeed}↓ ${uploadSpeed}↑`;
-
-            return `${downloadSpeed} / ${uploadSpeed}`;
-        }
+        const compact = speedFormat !== 'standard';
+        const useBits = this._useBits();
+        const format = bytes => (widest ? widestRate(useBits, compact) : formatRate(bytes, useBits, compact));
 
         if (this._settings?.get_string('display-mode') === 'total') {
-            const totalBytes = downloadBytes + uploadBytes;
-            return `↕ ${this._formatSpeed(totalBytes)}`;
+            const totalText = format(downloadBytes + uploadBytes);
+            return compact ? totalText : `↕ ${totalText}`;
         }
 
-        return `↓ ${this._formatSpeed(downloadBytes)} ↑ ${this._formatSpeed(uploadBytes)}`;
+        const downloadSpeed = format(downloadBytes);
+        const uploadSpeed = format(uploadBytes);
+
+        if (speedFormat === 'compact-arrows')
+            return `${downloadSpeed}↓ ${uploadSpeed}↑`;
+
+        if (speedFormat === 'compact-slash')
+            return `${downloadSpeed} / ${uploadSpeed}`;
+
+        return `↓ ${downloadSpeed} ↑ ${uploadSpeed}`;
     }
 
     _buildTooltipText(downloadBytes, uploadBytes) {
-        const totalBytes = downloadBytes + uploadBytes;
+        const useBits = this._useBits();
 
         return [
-            `Download: ${this._formatSpeed(downloadBytes)}`,
-            `Upload: ${this._formatSpeed(uploadBytes)}`,
-            `Total: ${this._formatSpeed(totalBytes)}`,
+            `Download: ${formatRate(downloadBytes, useBits, false)}`,
+            `Upload: ${formatRate(uploadBytes, useBits, false)}`,
+            `Total: ${formatRate(downloadBytes + uploadBytes, useBits, false)}`,
         ].join('\n');
     }
 
@@ -518,7 +609,7 @@ export default class FluxBarExtension extends Extension {
             return;
 
         const color = this._settings?.get_string('label-color') ?? '';
-        const styleParts = ['margin-top: 2px;'];
+        const styleParts = [BASE_LABEL_STYLE];
 
         if (/^#[0-9a-fA-F]{6}$/.test(color))
             styleParts.push(`color: ${color};`);

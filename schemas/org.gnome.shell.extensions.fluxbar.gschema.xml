@@ -46,5 +46,25 @@
       <summary>Update interval</summary>
       <description>Controls how often FluxBar refreshes network speed, in milliseconds.</description>
     </key>
+    <key name="idle-threshold" type="i">
+      <default>1024</default>
+      <summary>Idle threshold</summary>
+      <description>Combined speed, in bytes per second, at or below which the connection counts as idle for Hide When Idle. 0 hides only when there is no traffic at all.</description>
+    </key>
+    <key name="panel-position" type="s">
+      <choices>
+        <choice value='left'/>
+        <choice value='center'/>
+        <choice value='right'/>
+      </choices>
+      <default>'right'</default>
+      <summary>Panel position</summary>
+      <description>Which section of the top bar FluxBar appears in.</description>
+    </key>
+    <key name="history-cleared-at" type="x">
+      <default>0</default>
+      <summary>History cleared timestamp</summary>
+      <description>Set by the preferences window when the user clears usage history, so the running extension can drop its in-memory copy. Not meant to be edited by hand.</description>
+    </key>
   </schema>
 </schemalist>

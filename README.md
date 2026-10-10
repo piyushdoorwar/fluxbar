@@ -12,26 +12,26 @@ FluxBar keeps your current upload and download speed visible without opening a s
 
 - See live download and upload speed in the GNOME top bar
 - Switch between total speed and separate download/upload values
-- Choose standard or compact speed text, including `120K / 35K` and `120K↓ 35K↑`
-- Optionally hover the panel label to see download, upload, and total speed details
-- Display speeds in bytes or bits
-- Choose the network source: Automatic, Wi-Fi, Ethernet, or all real interfaces
-- Hide the top bar label when the selected network source is idle
+- Choose standard or compact speed text, including `120K / 35K` and `120↓ 35↑`
+- Steady-width label: the top bar doesn't shift around as numbers change
+- Hover the label for download, upload, and total speed details
+- Click the label to see today's and the last 30 days' usage
+- Display speeds in bytes or bits, from B/s up to GB/s
+- Choose the network source: Automatic, Wi-Fi, Ethernet, or all real interfaces (mobile broadband included)
+- Hide the label when idle, with an adjustable idle threshold so background chatter doesn't keep it visible
 - Choose an update interval: 1, 2, 3, or 5 seconds
-- Apply an optional custom text color
-- Switch the panel label between normal and bold text
-- Review daily network usage for the last 30 days
+- Place it on the left, center, or right of the top bar
+- Apply an optional custom text color and bold text
+- Review daily usage for the last 30 days, with totals, and clear it any time
 - Runs locally with no telemetry, network requests, or external services
 
 ## Screenshots
 
-Screenshots coming soon.
+| Settings | History |
+| --- | --- |
+| ![FluxBar settings](docs/screenshots/prefs-settings-light.png) | ![FluxBar usage history](docs/screenshots/prefs-history-light.png) |
 
-Suggested images:
-
-- Top bar speed indicator
-- FluxBar preferences window
-- 30-day usage table
+The preferences screenshots are generated from the real `prefs.js` with sample data by `make screenshots`.
 
 ## How It Works
 
@@ -105,7 +105,7 @@ make pack
 This is equivalent to:
 
 ```sh
-zip -r fluxbar@piyushdoorwar.github.io.zip metadata.json extension.js prefs.js schemas/org.gnome.shell.extensions.fluxbar.gschema.xml README.md LICENSE
+zip -r fluxbar@piyushdoorwar.github.io.zip metadata.json extension.js prefs.js utils.js schemas/org.gnome.shell.extensions.fluxbar.gschema.xml README.md LICENSE
 ```
 
 The generated zip can be installed manually or prepared for review and distribution.

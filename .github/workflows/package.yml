@@ -13,20 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Set version from tag
+      - name: Set version name from tag
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          # Tag must be v<integer> (e.g. v2); EGO requires an integer version.
-          VERSION="${GITHUB_REF_NAME#v}"
-          if ! echo "$VERSION" | grep -qE '^[0-9]+$'; then
-            echo "::error::Tag must be v<integer> (e.g. v2); got '$GITHUB_REF_NAME'"
+          # extensions.gnome.org assigns the numeric version itself; the tag only sets
+          # the human-readable version-name (letters, digits, spaces and dots, max 16).
+          VERSION_NAME="${GITHUB_REF_NAME#v}"
+          if ! echo "$VERSION_NAME" | grep -qE '^[A-Za-z0-9. ]{1,16}$'; then
+            echo "::error::Tag must be v<version>, e.g. v3 or v3.1; got '$GITHUB_REF_NAME'"
             exit 1
           fi
-          jq --argjson v "$VERSION" '.version = $v' metadata.json > metadata.tmp
+          jq --arg v "$VERSION_NAME" '."version-name" = $v | del(.version)' metadata.json > metadata.tmp
           mv metadata.tmp metadata.json
-          echo "metadata.json version set to $VERSION"
           cat metadata.json
 
       - name: Build zip
@@ -35,16 +35,24 @@ jobs:
       - name: Verify package
         run: |
           ZIP=fluxbar@piyushdoorwar.github.io.zip
-          # GNOME Shell 45+ compiles the schema at install time, so the
-          # precompiled binary must never be shipped (it gets the upload rejected).
-          if unzip -l "$ZIP" | grep -q gschemas.compiled; then
-            echo "::error::gschemas.compiled must not be packaged"
+          unzip -l "$ZIP"
+          # Files extensions.gnome.org's automated review flags. GNOME Shell 45+
+          # compiles the schema itself, so gschemas.compiled must never be shipped.
+          if unzip -Z1 "$ZIP" | grep -E 'gschemas\.compiled|(^|/)\.git|\.po$|\.pot$|^screenshots/|Makefile|package(-lock)?\.json|\.editorconfig|\.eslintrc'; then
+            echo "::error::The package contains files extensions.gnome.org rejects (listed above)"
             exit 1
           fi
-          unzip -l "$ZIP"
+          SIZE=$(stat -c %s "$ZIP")
+          if [ "$SIZE" -gt 5000000 ]; then
+            echo "::error::Package is $SIZE bytes; extensions.gnome.org accepts at most 5 MB"
+            exit 1
+          fi
+          for f in metadata.json extension.js prefs.js utils.js schemas/org.gnome.shell.extensions.fluxbar.gschema.xml; do
+            unzip -Z1 "$ZIP" | grep -qx "$f" || { echo "::error::$f is missing from the package"; exit 1; }
+          done
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: fluxbar-extension
           path: fluxbar@piyushdoorwar.github.io.zip
@@ -62,3 +70,47 @@ jobs:
           else
             gh release create "$GITHUB_REF_NAME" "$ZIP" --generate-notes
           fi
+
+  # Optional: submits the zip to extensions.gnome.org for review. Runs only when the
+  # EGO_USERNAME and EGO_PASSWORD repository secrets exist; without them the release
+  # is created as usual and you upload the zip by hand at extensions.gnome.org/upload.
+  publish:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    # `gnome-extensions upload` arrived in GNOME Shell 49; Fedora 43 ships it.
+    container: fedora:43
+    steps:
+      - name: Check for credentials
+        id: creds
+        env:
+          EGO_USERNAME: ${{ secrets.EGO_USERNAME }}
+          EGO_PASSWORD: ${{ secrets.EGO_PASSWORD }}
+        run: |
+          if [ -n "$EGO_USERNAME" ] && [ -n "$EGO_PASSWORD" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::EGO_USERNAME/EGO_PASSWORD secrets not set; skipping upload to extensions.gnome.org."
+          fi
+
+      - name: Download package
+        if: steps.creds.outputs.present == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: fluxbar-extension
+
+      - name: Upload to extensions.gnome.org
+        if: steps.creds.outputs.present == 'true'
+        env:
+          EGO_USERNAME: ${{ secrets.EGO_USERNAME }}
+          EGO_PASSWORD: ${{ secrets.EGO_PASSWORD }}
+        run: |
+          dnf install -y -q gnome-shell > /dev/null
+          # Pass the password through a file, never on the command line or in logs.
+          PASSWORD_FILE="$(mktemp)"
+          trap 'rm -f "$PASSWORD_FILE"' EXIT
+          printf '%s' "$EGO_PASSWORD" > "$PASSWORD_FILE"
+          gnome-extensions upload --accept-tos \
+            --user "$EGO_USERNAME" \
+            --password-file "$PASSWORD_FILE" \
+            fluxbar@piyushdoorwar.github.io.zip

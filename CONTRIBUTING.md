@@ -51,8 +51,18 @@ See the [GNOME extension review guidelines](https://gjs.guide/extensions/review-
 
 Keep each pull request focused on one change, fill in the template, and say which GNOME Shell version and session type you tested on.
 
+## Screenshots
+
+`make screenshots` renders the preferences window (light and dark) into `docs/screenshots/` using the real `prefs.js`, an in-memory settings backend and sample usage data. Re-run it after changing the preferences UI.
+
 ## Releases (maintainers)
 
-1. Push a tag `v<number>`, e.g. `v3`. The number becomes the `version` in `metadata.json`.
-2. The *Package extension* workflow builds the zip and attaches it to a GitHub release.
-3. Upload that zip at [extensions.gnome.org/upload](https://extensions.gnome.org/upload/). Review usually takes a few days.
+1. Push a tag `v<version>`, e.g. `v3`. The part after `v` becomes `version-name` in `metadata.json`; extensions.gnome.org assigns the numeric version itself.
+2. The *Package extension* workflow builds the zip, checks it against the files extensions.gnome.org rejects, and attaches it to a GitHub release.
+3. If the `EGO_USERNAME` and `EGO_PASSWORD` repository secrets are set, the workflow also submits the zip to extensions.gnome.org with `gnome-extensions upload`. Otherwise, upload the zip by hand at [extensions.gnome.org/upload](https://extensions.gnome.org/upload/).
+4. Review usually takes a few days.
+
+What appears on the extensions.gnome.org page:
+
+- **From `metadata.json`, on every upload:** name, description, homepage (`url`), supported shell versions, `version-name` and donation links. The description is plain text: line breaks are kept, the first line is the summary shown in search results, and Markdown is not rendered.
+- **Set by hand on the extension's page** (log in, open the page, click the image placeholders): the single screenshot and the icon, up to 2 MB each (PNG, JPG, GIF or WebP).

@@ -1,11 +1,18 @@
 {
   "uuid": "fluxbar@piyushdoorwar.github.io",
   "name": "FluxBar",
-  "description": "Shows live upload and download speed in the GNOME top bar.",
+  "description": "Live upload and download speed in your top bar, with 30 days of local usage history.\n\n• Separate download/upload or total speed, in bytes or bits\n• Standard (↓ 120 KB/s ↑ 35 KB/s) or compact (120K / 35K, 120↓ 35↑) formats\n• Steady-width label, so the top bar doesn't shift as speeds change\n• Hover for download, upload and total details; click for today's and 30-day usage\n• Network source: Automatic, Wi-Fi, Ethernet or all real interfaces (Docker, VMs and loopback are ignored; mobile broadband is included)\n• Hide when idle, with an adjustable idle threshold\n• Refresh every 1, 2, 3 or 5 seconds\n• Left, center or right placement, custom text color and bold text\n• Daily usage history with totals\n\nEverything stays on your machine: no telemetry and no network requests.",
   "url": "https://github.com/piyushdoorwar/fluxbar",
   "settings-schema": "org.gnome.shell.extensions.fluxbar",
-  "shell-version": ["45", "46", "47", "48", "49", "50"],
-  "version": 2,
+  "shell-version": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50"
+  ],
+  "version-name": "3",
   "donations": {
     "buymeacoffee": "piyushdoorwar"
   }

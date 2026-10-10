@@ -7,12 +7,9 @@ import Gtk from 'gi://Gtk';
 
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-const USAGE_DAYS_TO_SHOW = 30;
-const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
+import {USAGE_DAYS_TO_KEEP, formatBytes, getUsageFilePath, sumUsage} from './utils.js';
 
-function getUsageFilePath() {
-    return GLib.build_filenamev([GLib.get_user_data_dir(), 'fluxbar', 'usage.json']);
-}
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
 function readUsage() {
     try {
@@ -32,22 +29,24 @@ function readUsage() {
     return {};
 }
 
-function formatBytes(bytes) {
-    if (bytes < 1024)
-        return `${bytes} B`;
+// "2026-10-08" -> "Today", "Yesterday", or "Wed, Oct 8" (in the user's locale).
+function formatUsageDate(key) {
+    const [year, month, day] = key.split('-').map(Number);
+    const date = GLib.DateTime.new_local(year, month, day, 0, 0, 0);
 
-    const kib = bytes / 1024;
+    if (!date)
+        return key;
 
-    if (kib < 1024)
-        return `${kib.toFixed(1)} KB`;
+    const today = GLib.DateTime.new_now_local().format('%F');
+    const yesterday = GLib.DateTime.new_now_local().add_days(-1).format('%F');
 
-    const mib = kib / 1024;
+    if (key === today)
+        return 'Today';
 
-    if (mib < 1024)
-        return `${mib.toFixed(1)} MB`;
+    if (key === yesterday)
+        return 'Yesterday';
 
-    const gib = mib / 1024;
-    return `${gib.toFixed(2)} GB`;
+    return date.format('%a, %b %-e');
 }
 
 function rgbaFromHex(hex) {
@@ -85,6 +84,8 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
         this._actionGroup.add_action(this._settings.create_action('show-hover-details'));
         this._actionGroup.add_action(this._settings.create_action('text-weight'));
         this._actionGroup.add_action(this._settings.create_action('update-interval-ms'));
+        this._actionGroup.add_action(this._settings.create_action('idle-threshold'));
+        this._actionGroup.add_action(this._settings.create_action('panel-position'));
 
         this._addDisplayGroup();
         this._addUpdateGroup();
@@ -125,17 +126,32 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
             ['all', 'All interfaces'],
         ]);
 
+        this._addSegmentedChoice(group, 'Position', 'panel-position', [
+            ['left', 'Left'],
+            ['center', 'Center'],
+            ['right', 'Right'],
+        ]);
+
         const hideWhenIdleSwitch = new Gtk.Switch({
             action_name: 'fluxbar.hide-when-idle',
             valign: Gtk.Align.CENTER,
         });
         const hideWhenIdleRow = new Adw.ActionRow({
             title: 'Hide When Idle',
-            subtitle: 'Hide the top bar speed when there is no active traffic.',
+            subtitle: 'Hide the top bar speed after a few seconds without meaningful traffic.',
             activatable_widget: hideWhenIdleSwitch,
         });
         hideWhenIdleRow.add_suffix(hideWhenIdleSwitch);
         group.add(hideWhenIdleRow);
+
+        const idleThresholdRow = this._addSegmentedChoice(group, 'Idle Below', 'idle-threshold', [
+            [0, 'No traffic'],
+            [1024, '1 KB/s'],
+            [10240, '10 KB/s'],
+            [102400, '100 KB/s'],
+        ]);
+        idleThresholdRow.subtitle = 'Background traffic under this speed counts as idle.';
+        this._settings.bind('hide-when-idle', idleThresholdRow, 'sensitive', Gio.SettingsBindFlags.GET);
 
         const showHoverDetailsSwitch = new Gtk.Switch({
             action_name: 'fluxbar.show-hover-details',
@@ -173,6 +189,7 @@ class FluxBarSettingsPage extends Adw.PreferencesPage {
 
         row.add_suffix(buttons);
         group.add(row);
+        return row;
     }
 
     _addUpdateGroup() {
@@ -258,49 +275,120 @@ class FluxBarHistoryPage extends Adw.PreferencesPage {
         GObject.registerClass(this);
     }
 
-    constructor() {
+    constructor(settings) {
         super({
             title: 'History',
             icon_name: 'view-list-symbolic',
         });
 
-        this._addUsageGroup();
+        this._settings = settings;
+        this._group = null;
+        this._buildUsageGroup();
     }
 
-    _addUsageGroup() {
-        const group = new Adw.PreferencesGroup({
-            title: 'Data Consumption',
-            description: 'Last 30 days of recorded network usage.',
+    _buildUsageGroup() {
+        if (this._group)
+            this.remove(this._group);
+
+        const clearButton = new Gtk.Button({
+            label: 'Clear History',
+            valign: Gtk.Align.CENTER,
+            css_classes: ['destructive-action'],
         });
-        this.add(group);
+        clearButton.connect('clicked', () => this._confirmClear());
+
+        this._group = new Adw.PreferencesGroup({
+            title: 'Data Consumption',
+            description: `Last ${USAGE_DAYS_TO_KEEP} days of recorded network usage.`,
+            header_suffix: clearButton,
+        });
+        this.add(this._group);
 
         const usage = readUsage();
-        const dates = Object.keys(usage).sort().reverse().slice(0, USAGE_DAYS_TO_SHOW);
+        const dates = Object.keys(usage).sort().reverse().slice(0, USAGE_DAYS_TO_KEEP);
+        clearButton.sensitive = dates.length > 0;
 
         if (dates.length === 0) {
-            group.add(new Adw.ActionRow({
+            this._group.add(new Adw.ActionRow({
                 title: 'No data yet',
                 subtitle: 'FluxBar will start filling this table while it is enabled.',
             }));
             return;
         }
 
+        const total = sumUsage(usage);
+        this._group.add(new Adw.ActionRow({
+            title: `Total, last ${dates.length} ${dates.length === 1 ? 'day' : 'days'}`,
+            subtitle: `Download ${formatBytes(total.rxBytes)}   Upload ${formatBytes(total.txBytes)}   Total ${formatBytes(total.rxBytes + total.txBytes)}`,
+            css_classes: ['property'],
+        }));
+
         for (const date of dates) {
             const rxBytes = Number(usage[date]?.rxBytes) || 0;
             const txBytes = Number(usage[date]?.txBytes) || 0;
             const totalBytes = rxBytes + txBytes;
 
-            group.add(new Adw.ActionRow({
-                title: date,
+            this._group.add(new Adw.ActionRow({
+                title: formatUsageDate(date),
                 subtitle: `Download ${formatBytes(rxBytes)}   Upload ${formatBytes(txBytes)}   Total ${formatBytes(totalBytes)}`,
             }));
         }
+    }
+
+    _confirmClear() {
+        const heading = 'Clear usage history?';
+        const body = 'This permanently deletes all recorded daily usage. It cannot be undone.';
+
+        // Adw.AlertDialog arrived in libadwaita 1.5 (GNOME 46); GNOME 45 ships 1.4.
+        if (Adw.AlertDialog) {
+            const dialog = new Adw.AlertDialog({heading, body});
+            dialog.add_response('cancel', 'Cancel');
+            dialog.add_response('clear', 'Clear History');
+            dialog.set_response_appearance('clear', Adw.ResponseAppearance.DESTRUCTIVE);
+            dialog.connect('response', (_dialog, response) => {
+                if (response === 'clear')
+                    this._clearHistory();
+            });
+            dialog.present(this);
+            return;
+        }
+
+        const dialog = new Adw.MessageDialog({
+            heading,
+            body,
+            transient_for: this.get_root(),
+            modal: true,
+        });
+        dialog.add_response('cancel', 'Cancel');
+        dialog.add_response('clear', 'Clear History');
+        dialog.set_response_appearance('clear', Adw.ResponseAppearance.DESTRUCTIVE);
+        dialog.connect('response', (_dialog, response) => {
+            if (response === 'clear')
+                this._clearHistory();
+        });
+        dialog.present();
+    }
+
+    _clearHistory() {
+        // Tell the running extension first so it drops its in-memory copy, then
+        // delete the file ourselves in case the extension is disabled.
+        this._settings.set_int64('history-cleared-at', GLib.get_real_time());
+
+        try {
+            Gio.File.new_for_path(getUsageFilePath()).delete(null);
+        } catch (error) {
+            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+                console.error('FluxBar: Failed to delete usage data', error);
+        }
+
+        this._buildUsageGroup();
     }
 }
 
 export default class FluxBarPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-        window.add(new FluxBarSettingsPage(this.getSettings()));
-        window.add(new FluxBarHistoryPage());
+        const settings = this.getSettings();
+        window.add(new FluxBarSettingsPage(settings));
+        window.add(new FluxBarHistoryPage(settings));
     }
 }

@@ -15,6 +15,8 @@ export default [
                 console: 'readonly',
                 TextDecoder: 'readonly',
                 TextEncoder: 'readonly',
+                ARGV: 'readonly',
+                print: 'readonly',
                 globalThis: 'readonly',
                 imports: 'readonly',
                 log: 'readonly',

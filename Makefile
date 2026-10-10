@@ -1,7 +1,7 @@
 UUID    = fluxbar@piyushdoorwar.github.io
 EXT_DIR = $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
 SCHEMA  = schemas/org.gnome.shell.extensions.fluxbar.gschema.xml
-PACK    = metadata.json extension.js prefs.js $(SCHEMA) README.md LICENSE
+PACK    = metadata.json extension.js prefs.js utils.js $(SCHEMA) README.md LICENSE
 
 # Files that belong in the repo but not in the installed extension.
 EXCLUDES = --exclude='.git' --exclude='site' --exclude='.github' \
@@ -9,9 +9,9 @@ EXCLUDES = --exclude='.git' --exclude='site' --exclude='.github' \
            --exclude='package.json' --exclude='package-lock.json' \
            --exclude='eslint.config.mjs' --exclude='*.zip' --exclude='CLAUDE.md' \
            --exclude='scripts' --exclude='CONTRIBUTING.md' --exclude='SECURITY.md' \
-           --exclude='.editorconfig' --exclude='.gitignore' --exclude='.gitattributes' --exclude='.claude'
+           --exclude='docs' --exclude='.editorconfig' --exclude='.gitignore' --exclude='.gitattributes' --exclude='.claude'
 
-.PHONY: install schemas reload enable disable logs pack lint uninstall
+.PHONY: install schemas reload enable disable logs pack lint screenshots uninstall
 
 ## install: sync sources into the GNOME extensions dir and compile schemas
 install:
@@ -42,6 +42,10 @@ pack:
 ## lint: run ESLint (requires 'npm install' first)
 lint:
 	npx eslint .
+
+## screenshots: render the preferences window to docs/screenshots (sample data, not yours)
+screenshots:
+	GSETTINGS_BACKEND=memory gjs -m scripts/screenshots.js $(CURDIR) $(CURDIR)/docs/screenshots
 
 ## uninstall: disable and remove the installed extension
 uninstall:
