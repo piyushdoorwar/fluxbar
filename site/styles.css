@@ -262,6 +262,8 @@ button { font: inherit; }
 .stats li { padding: 18px 20px; background: var(--surface); min-width: 0; }
 .stats strong { display: block; color: var(--ink); font: 600 24px/1.2 var(--mono); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .stats li:first-child strong { color: var(--accent-text); }
+.stat-link { display: block; color: inherit; text-decoration: none; }
+.stat-link:hover span { color: var(--accent-text); }
 .stats span { display: block; margin-top: 4px; color: var(--muted); font-size: 14px; }
 
 /* ---- Product mock: GNOME desktop ------------------------------------- */
@@ -424,6 +426,15 @@ button { font: inherit; }
 .step h3 { font-size: 18px; }
 .step p { color: var(--muted); margin-top: 4px; }
 .step .cmd { margin-top: 14px; }
+.steps.options .step { grid-template-columns: minmax(0, 1fr); }
+.steps.options .step::before { display: none; }
+.step h3 .tag {
+  display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px; vertical-align: 2px;
+  background: var(--accent-soft); color: var(--accent-text); font-size: 12px; font-weight: 600;
+}
+.step-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 14px; }
+.step-note { color: var(--muted); font-size: 14px; }
+.step-note b { color: var(--ink); font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
 /* ---- Features --------------------------------------------------------- */
 .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }

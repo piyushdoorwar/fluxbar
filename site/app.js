@@ -27,19 +27,18 @@
   // ---- GNOME download count ---------------------------------------------
   // .github/workflows/refresh-extension-stats.yml writes data/extension-stats.json
   // daily from the GNOME Extensions API. The number in the HTML is the fallback.
-  const extensionDownloads = document.getElementById("extensionDownloads");
-  if (extensionDownloads) {
+  const downloadEls = document.querySelectorAll("[data-extension-downloads]");
+  if (downloadEls.length) {
     fetch("data/extension-stats.json", { cache: "no-cache" })
       .then((res) => (res.ok ? res.json() : null))
       .then((stats) => {
         if (!stats || !Number.isInteger(stats.downloads) || stats.downloads < 0) return;
-        extensionDownloads.textContent = new Intl.NumberFormat().format(stats.downloads);
-        if (stats.generatedAt) {
-          const updated = new Date(stats.generatedAt);
-          if (!Number.isNaN(updated.getTime())) {
-            extensionDownloads.title = `Updated ${updated.toLocaleDateString()}`;
-          }
-        }
+        const updated = stats.generatedAt ? new Date(stats.generatedAt) : null;
+        const title = updated && !Number.isNaN(updated.getTime()) ? `Updated ${updated.toLocaleDateString()}` : "";
+        downloadEls.forEach((el) => {
+          el.textContent = new Intl.NumberFormat().format(stats.downloads);
+          if (title) el.title = title;
+        });
       })
       .catch(() => {});
   }

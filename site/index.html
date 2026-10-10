@@ -106,9 +106,9 @@
               30 days of usage history.
             </p>
             <div class="actions">
-              <a class="btn btn-primary" href="#install">
+              <a class="btn btn-primary" href="https://extensions.gnome.org/extension/9789/fluxbar/" rel="noreferrer">
                 <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-download" /></svg>
-                <span>Install locally</span>
+                <span>Get it on GNOME Extensions</span>
               </a>
               <a class="btn btn-secondary" href="https://github.com/piyushdoorwar/fluxbar" rel="noreferrer">
                 <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-github" /></svg>
@@ -211,7 +211,7 @@
         <div class="wrap">
           <ul class="stats" aria-label="FluxBar highlights">
             <!-- The download count is refreshed daily into data/extension-stats.json; this value is the fallback. -->
-            <li><strong id="extensionDownloads">69</strong><span>GNOME downloads</span></li>
+            <li><a class="stat-link" href="https://extensions.gnome.org/extension/9789/fluxbar/" rel="noreferrer"><strong data-extension-downloads>124</strong><span>GNOME downloads</span></a></li>
             <li><strong>1s</strong><span>default refresh</span></li>
             <li><strong>30 days</strong><span>local usage history</span></li>
             <li><strong>0</strong><span>telemetry calls</span></li>
@@ -382,35 +382,42 @@
       <section class="section tint" id="install">
         <div class="wrap">
           <div class="section-head" data-reveal>
-            <span class="eyebrow">Install locally</span>
-            <h2>Clone it, then <code>make install</code>.</h2>
+            <span class="eyebrow">Install</span>
+            <h2>Get it from GNOME Extensions.</h2>
             <p>
-              FluxBar supports GNOME Shell 45 through 50. The included Makefile copies the files into
-              your extensions folder and compiles the schema for you.
+              FluxBar is published on extensions.gnome.org for GNOME Shell 45 through 50, so updates
+              arrive automatically. Pick whichever route suits you.
             </p>
           </div>
 
-          <div class="steps">
+          <div class="steps options">
             <div class="step" data-reveal>
-              <h3>Clone and install</h3>
-              <p>Get the source and let <code>make</code> put it in place.</p>
-              <div class="cmd">
-                <pre><code><span class="prompt">$ </span>git clone https://github.com/piyushdoorwar/fluxbar.git
-<span class="prompt">$ </span>cd fluxbar
-<span class="prompt">$ </span>make install</code></pre>
-                <button class="copy-btn" type="button" data-copy="git clone https://github.com/piyushdoorwar/fluxbar.git&#10;cd fluxbar&#10;make install" aria-label="Copy install commands">
-                  <svg class="ic i-copy" aria-hidden="true"><use href="assets/icons.svg#i-copy" /></svg>
-                  <svg class="ic i-check" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>
-                  <span>Copy</span>
-                </button>
+              <h3>From your browser <span class="tag">Recommended</span></h3>
+              <p>
+                Open FluxBar on extensions.gnome.org and flip the switch. This needs the GNOME Shell
+                integration add-on for Firefox or Chrome, plus the <code>gnome-browser-connector</code> package.
+              </p>
+              <div class="step-actions">
+                <a class="btn btn-primary" href="https://extensions.gnome.org/extension/9789/fluxbar/" rel="noreferrer">
+                  <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-download" /></svg>
+                  <span>Open on extensions.gnome.org</span>
+                </a>
+                <span class="step-note"><b data-extension-downloads>124</b> downloads so far</span>
               </div>
             </div>
             <div class="step" data-reveal style="--d: 0.06s">
-              <h3>Enable the extension</h3>
-              <p>Turn FluxBar on from the terminal, or later from the GNOME Extensions app.</p>
+              <h3>From the terminal</h3>
+              <p>
+                Asks GNOME Shell to fetch FluxBar from extensions.gnome.org. No browser add-on needed;
+                just confirm the dialog that pops up.
+              </p>
               <div class="cmd">
-                <pre><code><span class="prompt">$ </span>gnome-extensions enable fluxbar@piyushdoorwar.github.io</code></pre>
-                <button class="copy-btn" type="button" data-copy="gnome-extensions enable fluxbar@piyushdoorwar.github.io" aria-label="Copy enable command">
+                <pre><code><span class="prompt">$ </span>gdbus call --session \
+    --dest org.gnome.Shell.Extensions \
+    --object-path /org/gnome/Shell/Extensions \
+    --method org.gnome.Shell.Extensions.InstallRemoteExtension \
+    fluxbar@piyushdoorwar.github.io</code></pre>
+                <button class="copy-btn" type="button" data-copy="gdbus call --session --dest org.gnome.Shell.Extensions --object-path /org/gnome/Shell/Extensions --method org.gnome.Shell.Extensions.InstallRemoteExtension fluxbar@piyushdoorwar.github.io" aria-label="Copy terminal install command">
                   <svg class="ic i-copy" aria-hidden="true"><use href="assets/icons.svg#i-copy" /></svg>
                   <svg class="ic i-check" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>
                   <span>Copy</span>
@@ -418,11 +425,30 @@
               </div>
             </div>
             <div class="step" data-reveal style="--d: 0.12s">
-              <h3>Restart GNOME Shell</h3>
+              <h3>With Extension Manager</h3>
               <p>
-                On X11, press <kbd>Alt</kbd> + <kbd>F2</kbd>, type <kbd>r</kbd> and press <kbd>Enter</kbd>.
-                On Wayland, log out and back in. The speed appears in the top bar.
+                Install <a href="https://flathub.org/apps/com.mattjakeman.ExtensionManager" rel="noreferrer">Extension Manager</a>
+                from Flathub, search for <b>FluxBar</b> and click Install. (GNOME's built-in Extensions app can
+                manage FluxBar once it's installed, but it can't install new extensions.)
               </p>
+            </div>
+            <div class="step" data-reveal style="--d: 0.18s">
+              <h3>From source</h3>
+              <p>
+                For hacking on FluxBar. The Makefile copies the files into your extensions folder and compiles
+                the schema. On Wayland, log out and back in before enabling.
+              </p>
+              <div class="cmd">
+                <pre><code><span class="prompt">$ </span>git clone https://github.com/piyushdoorwar/fluxbar.git
+<span class="prompt">$ </span>cd fluxbar
+<span class="prompt">$ </span>make install
+<span class="prompt">$ </span>gnome-extensions enable fluxbar@piyushdoorwar.github.io</code></pre>
+                <button class="copy-btn" type="button" data-copy="git clone https://github.com/piyushdoorwar/fluxbar.git&#10;cd fluxbar&#10;make install&#10;gnome-extensions enable fluxbar@piyushdoorwar.github.io" aria-label="Copy source install commands">
+                  <svg class="ic i-copy" aria-hidden="true"><use href="assets/icons.svg#i-copy" /></svg>
+                  <svg class="ic i-check" aria-hidden="true"><use href="assets/icons.svg#i-check" /></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -438,7 +464,7 @@
             </div>
             <div class="actions">
               <a class="btn btn-primary" href="#install">
-                <span>Install locally</span>
+                <span>Install FluxBar</span>
                 <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-arrow" /></svg>
               </a>
               <a class="btn btn-secondary" href="https://github.com/piyushdoorwar/fluxbar/releases" rel="noreferrer">
