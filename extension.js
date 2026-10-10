@@ -59,6 +59,9 @@ function getInterfaceType(name) {
     if (name.startsWith('en') || name.startsWith('eth'))
         return 'ethernet';
 
+    if (name.startsWith('ww') || name.startsWith('usb'))
+        return 'mobile';
+
     if (name.startsWith('tun') || name.startsWith('tap') || name.startsWith('wg') || name.startsWith('ppp'))
         return 'vpn';
 
@@ -80,7 +83,7 @@ function shouldIncludeInterface(name, selectedSource) {
     if (selectedSource === 'ethernet')
         return type === 'ethernet';
 
-    return type === 'wifi' || type === 'ethernet';
+    return type === 'wifi' || type === 'ethernet' || type === 'mobile';
 }
 
 const FluxBarIndicator = GObject.registerClass(
@@ -182,6 +185,9 @@ export default class FluxBarExtension extends Extension {
         this._updating = false;
         this._usage = {};
         this._usageDirty = false;
+        this._downloadSpeed = 0;
+        this._uploadSpeed = 0;
+        this._hasSelectedInterface = false;
 
         Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
         Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
@@ -191,19 +197,18 @@ export default class FluxBarExtension extends Extension {
         this._settingsChangedId = this._settings.connect('changed', async (_settings, key) => {
             if (key === 'update-interval-ms') {
                 this._restartTimer();
+                return;
             } else if (key === 'network-source') {
                 this._previousStats = await this._readNetworkStats();
                 if (!this._indicator) return;
-                this._indicator.setSpeedText(this._buildSpeedText(0, 0));
-                this._indicator.setTooltipText(this._buildTooltipText(0, 0));
-                this._updateVisibility(this._previousStats?.hasSelectedInterface ?? false, 0);
-                this._applyColor();
-                return;
+                this._downloadSpeed = 0;
+                this._uploadSpeed = 0;
+                this._hasSelectedInterface = this._previousStats?.hasSelectedInterface ?? false;
             } else if (key === 'show-hover-details') {
                 this._indicator?.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
             }
 
-            await this._update();
+            this._render();
         });
         this._indicator = new FluxBarIndicator(() => this.openPreferences());
         this._indicator.setTooltipEnabled(this._settings.get_boolean('show-hover-details'));
@@ -214,8 +219,8 @@ export default class FluxBarExtension extends Extension {
         if (!this._indicator) return;
         this._previousStats = await this._readNetworkStats();
         if (!this._indicator) return;
-        await this._update();
-        if (!this._indicator) return;
+        this._hasSelectedInterface = this._previousStats?.hasSelectedInterface ?? false;
+        this._render();
         this._restartTimer();
         this._startUsageFlushTimer();
     }
@@ -327,6 +332,7 @@ export default class FluxBarExtension extends Extension {
             if (currentStats && this._previousStats) {
                 let downloadBytes = 0;
                 let uploadBytes = 0;
+                const elapsedSeconds = (currentStats.timestamp - this._previousStats.timestamp) / GLib.USEC_PER_SEC;
 
                 for (const name in currentStats.interfaces) {
                     const previous = this._previousStats.interfaces[name];
@@ -342,17 +348,19 @@ export default class FluxBarExtension extends Extension {
                 }
 
                 this._recordUsage(downloadBytes, uploadBytes);
-                this._indicator.setSpeedText(this._buildSpeedText(downloadBytes, uploadBytes));
-                this._indicator.setTooltipText(this._buildTooltipText(downloadBytes, uploadBytes));
-                this._updateVisibility(currentStats.hasSelectedInterface, downloadBytes + uploadBytes);
-                this._applyColor();
+
+                // The delta covers however long actually passed since the last
+                // sample (the interval setting, plus any timer drift), not one second.
+                if (elapsedSeconds > 0) {
+                    this._downloadSpeed = Math.round(downloadBytes / elapsedSeconds);
+                    this._uploadSpeed = Math.round(uploadBytes / elapsedSeconds);
+                }
             }
 
             if (currentStats) {
-                if (!this._previousStats)
-                    this._updateVisibility(currentStats.hasSelectedInterface, 0);
-
+                this._hasSelectedInterface = currentStats.hasSelectedInterface;
                 this._previousStats = currentStats;
+                this._render();
             }
         } finally {
             this._updating = false;
@@ -363,6 +371,7 @@ export default class FluxBarExtension extends Extension {
         try {
             const file = Gio.File.new_for_path(PROC_NET_DEV);
             const [contents] = await file.load_contents_async(this._cancellable);
+            const timestamp = GLib.get_monotonic_time();
             const decoder = new TextDecoder('utf-8');
             const lines = decoder.decode(contents).split('\n');
 
@@ -392,12 +401,22 @@ export default class FluxBarExtension extends Extension {
                 };
             }
 
-            return {interfaces, hasSelectedInterface};
+            return {interfaces, hasSelectedInterface, timestamp};
         } catch (error) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 console.error('FluxBar: Failed to read /proc/net/dev', error);
             return null;
         }
+    }
+
+    _render() {
+        if (!this._indicator)
+            return;
+
+        this._indicator.setSpeedText(this._buildSpeedText(this._downloadSpeed, this._uploadSpeed));
+        this._indicator.setTooltipText(this._buildTooltipText(this._downloadSpeed, this._uploadSpeed));
+        this._updateVisibility(this._hasSelectedInterface, this._downloadSpeed + this._uploadSpeed);
+        this._applyColor();
     }
 
     _updateVisibility(hasSelectedInterface, totalBytes) {
@@ -551,7 +570,9 @@ export default class FluxBarExtension extends Extension {
     }
 
     _flushUsageSync() {
-        if (!this._usage)
+        // Only write when there is something new: if disable() lands before
+        // _readUsage() finishes, this._usage is still {} and would wipe the file.
+        if (!this._usageDirty || !this._usage)
             return;
 
         const filePath = getUsageFilePath();

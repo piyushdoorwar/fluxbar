@@ -35,7 +35,7 @@ Suggested images:
 
 ## How It Works
 
-FluxBar reads network counters from `/proc/net/dev`. By default, Automatic mode shows traffic from real Wi-Fi and Ethernet interfaces while ignoring loopback, Docker, bridge, VM, and other virtual adapters. You can also limit the speed reading to Wi-Fi or Ethernet, or combine all recognized real interfaces. Usage history is stored locally on your machine.
+FluxBar reads network counters from `/proc/net/dev`. By default, Automatic mode shows traffic from real Wi-Fi, Ethernet, and mobile broadband (WWAN or USB tethering) interfaces while ignoring loopback, Docker, bridge, VM, and other virtual adapters. You can also limit the speed reading to Wi-Fi or Ethernet, or combine all recognized real interfaces. Usage history is stored locally on your machine.
 
 ```text
 ~/.local/share/fluxbar/usage.json
