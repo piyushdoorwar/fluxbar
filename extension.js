@@ -37,6 +37,11 @@ function getTodayKey() {
     return GLib.DateTime.new_now_local().format('%F');
 }
 
+// JSON.parse and other plain JS errors have no matches(); only GLib errors do.
+function isCancelled(error) {
+    return error instanceof GLib.Error && error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED);
+}
+
 function pruneUsage(usage) {
     const keepDates = Object.keys(usage).sort().slice(-USAGE_DAYS_TO_KEEP);
     const prunedUsage = {};
@@ -184,7 +189,9 @@ class FluxBarIndicator extends PanelMenu.Button {
 
     setSpeedText(text, widestText) {
         this._label.text = text;
-        this._sizer.text = widestText;
+
+        if (this._sizer.text !== widestText)
+            this._sizer.text = widestText;
     }
 
     setUsageSummary(todayText, rangeText) {
@@ -212,6 +219,10 @@ class FluxBarIndicator extends PanelMenu.Button {
     }
 
     setLabelStyle(style) {
+        // Called every tick; restyling triggers a relayout, so skip it when nothing changed.
+        if (this._label.style === style)
+            return;
+
         // The placeholder must share the label's font weight or its width would be wrong.
         this._label.style = style;
         this._sizer.style = style;
@@ -532,7 +543,7 @@ export default class FluxBarExtension extends Extension {
 
             return {interfaces, hasSelectedInterface, timestamp};
         } catch (error) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+            if (!isCancelled(error))
                 console.error('FluxBar: Failed to read /proc/net/dev', error);
             return null;
         }
@@ -655,7 +666,7 @@ export default class FluxBarExtension extends Extension {
             );
             this._usageDirty = false;
         } catch (error) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+            if (!isCancelled(error))
                 console.error('FluxBar: Failed to write usage data', error);
         }
     }
@@ -687,10 +698,12 @@ export default class FluxBarExtension extends Extension {
             if (usage && typeof usage === 'object')
                 return usage;
         } catch (error) {
-            if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+            if (isCancelled(error))
                 return {};
 
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+            // A corrupt file (invalid JSON) is logged and treated as empty rather
+            // than aborting enable().
+            if (!(error instanceof GLib.Error && error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)))
                 console.error('FluxBar: Failed to read usage data', error);
         }
 
