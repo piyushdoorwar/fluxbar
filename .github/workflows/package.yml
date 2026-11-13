@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set version name from tag
         if: startsWith(github.ref, 'refs/tags/')
@@ -52,7 +52,7 @@ jobs:
           done
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fluxbar-extension
           path: fluxbar@piyushdoorwar.github.io.zip
@@ -95,7 +95,7 @@ jobs:
 
       - name: Download package
         if: steps.creds.outputs.present == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fluxbar-extension
 
